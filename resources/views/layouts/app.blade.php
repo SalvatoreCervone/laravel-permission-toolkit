@@ -33,10 +33,11 @@
         header {
             background-color: var(--bg-card);
             border-bottom: 1px solid var(--border);
-            padding: 1rem 2rem;
+            padding: 0.85rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            z-index: 100;
         }
         .brand {
             font-weight: 700;
@@ -75,8 +76,8 @@
         }
         main {
             flex: 1;
-            padding: 2rem;
-            max-width: 1400px;
+            padding: 1.25rem 2rem;
+            max-width: 98vw;
             margin: 0 auto;
             width: 100%;
         }
@@ -84,14 +85,14 @@
             background-color: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: 0.5rem;
-            padding: 1.5rem;
+            padding: 1.25rem 1.5rem;
             margin-bottom: 1.5rem;
         }
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.25rem;
+            margin-bottom: 1rem;
         }
         .card-title {
             font-size: 1.15rem;
@@ -109,16 +110,18 @@
         .badge-danger { background: #7f1d1d; color: #fca5a5; border: 1px solid #b91c1c; }
         .badge-warning { background: #78350f; color: #fde68a; border: 1px solid #d97706; }
         .badge-info { background: #1e1b4b; color: #a5b4fc; border: 1px solid #4338ca; }
-        .table-responsive { overflow-x: auto; }
+        .table-responsive { overflow: auto; }
         table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
             text-align: left;
             font-size: 0.875rem;
         }
         th, td {
-            padding: 0.75rem 1rem;
+            padding: 0.65rem 1rem;
             border-bottom: 1px solid var(--border);
+            border-right: 1px solid rgba(255,255,255,0.05);
         }
         th {
             background-color: #171f2e;
@@ -128,7 +131,7 @@
             font-size: 0.75rem;
             letter-spacing: 0.05em;
         }
-        tr:hover td { background-color: rgba(255, 255, 255, 0.02); }
+        tr:hover td { background-color: rgba(255, 255, 255, 0.03); }
         .btn {
             background-color: var(--primary);
             color: #fff;
@@ -143,6 +146,7 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            white-space: nowrap;
         }
         .btn:hover { background-color: var(--primary-hover); }
         .btn-secondary {
