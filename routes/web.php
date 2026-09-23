@@ -24,10 +24,11 @@ Route::group(['prefix' => $prefix, 'middleware' => $middleware, 'as' => 'permiss
     Route::post('/permissions', [PermissionController::class, 'store'])->name('permissions.store');
     Route::delete('/permissions/{id}', [PermissionController::class, 'destroy'])->name('permissions.destroy');
 
-    // User Access Management
+    // User Access & Security Management
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
     Route::get('/users/{id}', [UserController::class, 'edit'])->name('users.edit');
     Route::post('/users/{id}', [UserController::class, 'update'])->name('users.update');
+    Route::post('/users/{id}/password', [UserController::class, 'resetPassword'])->name('users.password');
 
     // Diagnostic Simulator
     Route::get('/simulator', [SimulatorController::class, 'index'])->name('simulator');

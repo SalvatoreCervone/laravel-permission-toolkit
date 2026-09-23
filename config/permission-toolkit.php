@@ -42,6 +42,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | User Password Reset & Security Date Field
+    |--------------------------------------------------------------------------
+    |
+    | Allows admins to reset user passwords from the panel and optionally
+    | set a timestamp / date column on the user model (e.g. 'password_reset',
+    | 'password_expires_at', 'expires_at', etc.).
+    |
+    */
+    'password_reset' => [
+        'enabled' => true,
+        'date_field' => env('PERMISSION_TOOLKIT_PASSWORD_DATE_FIELD', 'password_reset'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Audit Trail
     |--------------------------------------------------------------------------
     |

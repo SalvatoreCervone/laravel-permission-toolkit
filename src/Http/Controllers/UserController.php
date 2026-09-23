@@ -4,6 +4,8 @@ namespace SalvatoreCervone\PermissionToolkit\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use SalvatoreCervone\PermissionToolkit\Services\AuditLogger;
 use Spatie\Permission\Models\Permission;
@@ -59,7 +61,7 @@ class UserController extends Controller
     }
 
     /**
-     * Show form to edit user roles and direct permissions.
+     * Show form to edit user roles, direct permissions and password.
      */
     public function edit(int $id)
     {
@@ -81,12 +83,17 @@ class UserController extends Controller
         $userRoleIds = $user->roles->pluck('id')->toArray();
         $userPermissionIds = $user->permissions->pluck('id')->toArray();
 
+        $defaultDateField = config('permission-toolkit.password_reset.date_field', 'password_reset');
+        $passwordResetEnabled = config('permission-toolkit.password_reset.enabled', true);
+
         return view('permission-toolkit::users.edit', compact(
             'user',
             'roles',
             'groupedPermissions',
             'userRoleIds',
-            'userPermissionIds'
+            'userPermissionIds',
+            'defaultDateField',
+            'passwordResetEnabled'
         ));
     }
 
@@ -140,5 +147,67 @@ class UserController extends Controller
         return redirect()
             ->route('permission-toolkit.users.edit', $id)
             ->with('status', "Accessi per l'utente [{$user->name}] aggiornati con successo.");
+    }
+
+    /**
+     * Reset user password and optionally update an associated date/timestamp field.
+     */
+    public function resetPassword(Request $request, int $id)
+    {
+        if (! config('permission-toolkit.password_reset.enabled', true)) {
+            abort(403, 'La funzionalità di reset password è disabilitata da configurazione.');
+        }
+
+        $request->validate([
+            'password' => ['required', 'string', 'min:6'],
+            'date_value' => ['nullable', 'string'],
+            'date_field' => ['nullable', 'string', 'regex:/^[a-zA-Z0-9_]+$/'],
+        ]);
+
+        $userModelClass = config('permission-toolkit.user_model')
+            ?? config('auth.providers.users.model', 'App\\Models\\User');
+
+        $user = (new $userModelClass)->newQuery()->findOrFail($id);
+
+        // Update password
+        $user->password = Hash::make($request->input('password'));
+
+        $dateField = $request->input('date_field') ?: config('permission-toolkit.password_reset.date_field', 'password_reset');
+        $dateValue = $request->input('date_value');
+        $dateApplied = false;
+
+        $table = $user->getTable();
+        if ($dateField && $dateValue && Schema::hasColumn($table, $dateField)) {
+            $user->{$dateField} = Carbon::parse($dateValue);
+            $dateApplied = true;
+        }
+
+        $user->save();
+
+        // Audit Trail tracking
+        AuditLogger::log(
+            $user,
+            'reset',
+            'password',
+            'password',
+            null,
+            null,
+            array_filter([
+                'date_field' => $dateField,
+                'date_value' => $dateValue,
+                'date_applied' => $dateApplied,
+            ])
+        );
+
+        $msg = "Password per l'utente [{$user->name}] reimpostata con successo.";
+        if ($dateApplied) {
+            $msg .= " Campo [{$dateField}] aggiornato a [{$dateValue}].";
+        } elseif ($dateField && $dateValue) {
+            $msg .= " Nota: la colonna [{$dateField}] non esiste nella tabella [{$table}] ed è stata ignorata.";
+        }
+
+        return redirect()
+            ->route('permission-toolkit.users.edit', $id)
+            ->with('status', $msg);
     }
 }
