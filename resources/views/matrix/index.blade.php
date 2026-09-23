@@ -83,6 +83,45 @@
     #matrixTable tbody tr:hover td:first-child {
         background-color: #1e2538;
     }
+
+    /* Elementi Cliccabili per Filtro Rapido */
+    .perm-name-clickable {
+        cursor: pointer;
+        padding: 0.15rem 0.45rem;
+        border-radius: 0.25rem;
+        transition: all 0.15s ease;
+        display: inline-block;
+        user-select: none;
+    }
+    .perm-name-clickable:hover {
+        background: rgba(99, 102, 241, 0.25);
+        color: #c7d2fe;
+    }
+    .role-filter-btn {
+        cursor: pointer;
+        transition: all 0.15s ease;
+        user-select: none;
+    }
+    .role-filter-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.7);
+    }
+
+    /* Evidenziazione Elementi Filtrati */
+    .perm-row-selected td {
+        background-color: rgba(99, 102, 241, 0.22) !important;
+    }
+    .perm-row-selected td:first-child {
+        background-color: #1f2740 !important;
+        border-left: 4px solid #6366f1;
+    }
+    .role-col-selected {
+        background-color: #312e81 !important;
+        box-shadow: inset 0 0 0 2px #6366f1;
+    }
+    td.role-cell-selected {
+        background-color: rgba(99, 102, 241, 0.14) !important;
+    }
 </style>
 @endpush
 
@@ -96,7 +135,7 @@
                 <span class="badge badge-success" style="font-size: 0.75rem;">{{ $permissions->count() }} Permessi</span>
             </h1>
             <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.2rem;">
-                Tabella a scorrimento bidirezionale fluido con colonna dei permessi e intestazione dei ruoli bloccate.
+                💡 <strong>Filtro rapido</strong>: clicca sul nome di un <strong>permesso</strong> per visualizzare solo i ruoli che lo hanno, oppure clicca sull'etichetta di un <strong>ruolo</strong> per visualizzare solo i permessi assegnati.
             </p>
         </div>
         <div style="display: flex; gap: 0.75rem; align-items: center;">
@@ -111,6 +150,17 @@
     </div>
 </div>
 
+<!-- Barra Filtro Attivo -->
+<div id="matrixActiveFilterBar" style="display: none; align-items: center; justify-content: space-between; background: rgba(79, 70, 229, 0.15); border: 1px solid #4f46e5; border-radius: 0.5rem; padding: 0.6rem 1.25rem; margin-bottom: 1rem;">
+    <div style="display: flex; align-items: center; gap: 0.75rem; font-size: 0.85rem;">
+        <span style="font-size: 1.15rem;">🎯</span>
+        <span id="matrixActiveFilterText" style="color: #e0e7ff;"></span>
+    </div>
+    <button type="button" class="btn btn-secondary" onclick="resetMatrixFilter()" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; border-color: #6366f1;">
+        ✕ Rimuovi Filtro
+    </button>
+</div>
+
 <div class="matrix-container">
     <table id="matrixTable">
         <thead>
@@ -119,10 +169,15 @@
                     Modulo / Permesso Spatie
                 </th>
                 @foreach($roles as $role)
-                    <th style="text-align: center; min-width: 130px; width: 130px;">
+                    <th class="role-col-header" data-role-id="{{ $role->id }}" style="text-align: center; min-width: 130px; width: 130px;">
                         <div style="display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
-                            <span class="badge badge-info" style="font-size: 0.7rem; white-space: nowrap;">{{ $role->name }}</span>
-                            <button type="button" onclick="deleteRole({{ $role->id }}, '{{ $role->name }}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.75rem;" title="Elimina ruolo">✕</button>
+                            <span class="badge badge-info role-filter-btn" 
+                                  onclick="filterByRole({{ $role->id }}, '{{ addslashes($role->name) }}')"
+                                  title="🔍 Clicca per mostrare solo i permessi assegnati a questo ruolo"
+                                  style="font-size: 0.7rem; white-space: nowrap;">
+                                {{ $role->name }}
+                            </span>
+                            <button type="button" onclick="event.stopPropagation(); deleteRole({{ $role->id }}, '{{ addslashes($role->name) }}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.75rem;" title="Elimina ruolo">✕</button>
                         </div>
                         <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.15rem;">{{ $role->guard_name }}</div>
                     </th>
@@ -131,26 +186,28 @@
         </thead>
         <tbody>
             @forelse($groupedPermissions as $group => $perms)
-                <tr style="background: rgba(79, 70, 229, 0.08);">
+                <tr class="module-row" data-group-name="{{ strtolower($group) }}" style="background: rgba(79, 70, 229, 0.08);">
                     <td class="module-header-sticky" style="padding: 0.4rem 1rem;">
                         📂 Modulo: {{ $group }} ({{ count($perms) }})
                     </td>
-                    <td colspan="{{ count($roles) }}" style="background: rgba(79, 70, 229, 0.08); border-bottom: 1px solid var(--border);"></td>
+                    <td class="module-row-spacer" colspan="{{ count($roles) }}" style="background: rgba(79, 70, 229, 0.08); border-bottom: 1px solid var(--border);"></td>
                 </tr>
                 @foreach($perms as $permission)
-                    <tr class="perm-row" data-perm-name="{{ strtolower($permission->name) }}" data-group-name="{{ strtolower($group) }}">
+                    <tr class="perm-row" data-perm-id="{{ $permission->id }}" data-perm-name="{{ strtolower($permission->name) }}" data-group-name="{{ strtolower($group) }}">
                         <td style="font-family: monospace; font-size: 0.85rem; display: flex; align-items: center; justify-content: space-between; min-width: 320px;">
-                            <span>
+                            <span class="perm-name-clickable" 
+                                  onclick="filterByPermission({{ $permission->id }}, '{{ addslashes($permission->name) }}')"
+                                  title="🔍 Clicca per mostrare solo i ruoli che hanno questo permesso">
                                 <strong>{{ $permission->name }}</strong>
                                 <span style="font-size: 0.7rem; color: var(--text-muted); margin-left: 0.4rem;">({{ $permission->guard_name }})</span>
                             </span>
-                            <button type="button" onclick="deletePermission({{ $permission->id }}, '{{ $permission->name }}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.75rem; padding: 0.2rem;" title="Elimina permesso">✕</button>
+                            <button type="button" onclick="event.stopPropagation(); deletePermission({{ $permission->id }}, '{{ addslashes($permission->name) }}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.75rem; padding: 0.2rem;" title="Elimina permesso">✕</button>
                         </td>
                         @foreach($roles as $role)
                             @php
                                 $hasPerm = $role->hasPermissionTo($permission->name);
                             @endphp
-                            <td style="text-align: center; min-width: 130px;">
+                            <td class="role-cell" data-role-id="{{ $role->id }}" data-has-perm="{{ $hasPerm ? '1' : '0' }}" style="text-align: center; min-width: 130px;">
                                 <input 
                                     type="checkbox" 
                                     class="perm-toggle" 
@@ -217,11 +274,158 @@
 
 @push('scripts')
 <script>
+    let currentMatrixFilter = null; // { type: 'perm' | 'role', id: number, name: string }
+    const totalRolesCount = {{ count($roles) }};
+
     function openModal(id) {
         document.getElementById(id).style.display = 'flex';
     }
     function closeModal(id) {
         document.getElementById(id).style.display = 'none';
+    }
+
+    function filterByPermission(permId, permName) {
+        if (currentMatrixFilter && currentMatrixFilter.type === 'perm' && currentMatrixFilter.id === permId) {
+            resetMatrixFilter();
+            return;
+        }
+
+        resetMatrixFilter(false);
+        currentMatrixFilter = { type: 'perm', id: permId, name: permName };
+
+        const targetRow = document.querySelector(`.perm-row[data-perm-id="${permId}"]`);
+        if (!targetRow) return;
+
+        // Trova i ruoli che hanno questo permesso attivo (spuntato)
+        const matchingRoleIds = new Set();
+        targetRow.querySelectorAll('.perm-toggle').forEach(checkbox => {
+            if (checkbox.checked) {
+                matchingRoleIds.add(checkbox.dataset.roleId);
+            }
+        });
+
+        // Filtra le colonne: mostra solo i ruoli che hanno il permesso
+        document.querySelectorAll('.role-col-header').forEach(th => {
+            const roleId = th.dataset.roleId;
+            th.style.display = matchingRoleIds.has(roleId) ? '' : 'none';
+        });
+
+        document.querySelectorAll('.role-cell').forEach(td => {
+            const roleId = td.dataset.roleId;
+            td.style.display = matchingRoleIds.has(roleId) ? '' : 'none';
+        });
+
+        // Aggiorna colspan delle righe modulo
+        document.querySelectorAll('.module-row-spacer').forEach(td => {
+            td.colSpan = Math.max(matchingRoleIds.size, 1);
+        });
+
+        // Evidenzia la riga del permesso cliccato
+        targetRow.classList.add('perm-row-selected');
+
+        // Mostra la barra filtro attivo
+        const filterBar = document.getElementById('matrixActiveFilterBar');
+        const filterText = document.getElementById('matrixActiveFilterText');
+        filterBar.style.display = 'flex';
+        filterText.innerHTML = `Filtro Permesso: <strong style="color: #a5b4fc; font-family: monospace;">${permName}</strong> — Mostrando solo i <strong>${matchingRoleIds.size}</strong> ruoli che lo possiedono.`;
+
+        if (typeof showToast === 'function') {
+            showToast(`Filtrati ${matchingRoleIds.size} ruoli con permesso [${permName}]`);
+        }
+    }
+
+    function filterByRole(roleId, roleName) {
+        if (currentMatrixFilter && currentMatrixFilter.type === 'role' && currentMatrixFilter.id === roleId) {
+            resetMatrixFilter();
+            return;
+        }
+
+        resetMatrixFilter(false);
+        currentMatrixFilter = { type: 'role', id: roleId, name: roleName };
+
+        // Evidenzia la colonna del ruolo cliccato
+        const roleTh = document.querySelector(`.role-col-header[data-role-id="${roleId}"]`);
+        if (roleTh) roleTh.classList.add('role-col-selected');
+
+        document.querySelectorAll(`.role-cell[data-role-id="${roleId}"]`).forEach(td => {
+            td.classList.add('role-cell-selected');
+        });
+
+        // Filtra le righe: mostra solo i permessi assegnati a questo ruolo
+        let matchCount = 0;
+        document.querySelectorAll('.perm-row').forEach(row => {
+            const checkbox = row.querySelector(`.perm-toggle[data-role-id="${roleId}"]`);
+            const hasPerm = checkbox && checkbox.checked;
+            row.style.display = hasPerm ? '' : 'none';
+            if (hasPerm) matchCount++;
+        });
+
+        // Nasconde i moduli vuoti
+        updateModuleRowsVisibility();
+
+        // Mostra la barra filtro attivo
+        const filterBar = document.getElementById('matrixActiveFilterBar');
+        const filterText = document.getElementById('matrixActiveFilterText');
+        filterBar.style.display = 'flex';
+        filterText.innerHTML = `Filtro Ruolo: <strong style="color: #a5b4fc;">${roleName}</strong> — Mostrando solo i <strong>${matchCount}</strong> permessi assegnati a questo ruolo.`;
+
+        if (typeof showToast === 'function') {
+            showToast(`Filtrati ${matchCount} permessi per il ruolo [${roleName}]`);
+        }
+    }
+
+    function updateModuleRowsVisibility() {
+        document.querySelectorAll('.module-row').forEach(moduleRow => {
+            let hasVisiblePerms = false;
+            let sibling = moduleRow.nextElementSibling;
+            while (sibling && sibling.classList.contains('perm-row')) {
+                if (sibling.style.display !== 'none') {
+                    hasVisiblePerms = true;
+                    break;
+                }
+                sibling = sibling.nextElementSibling;
+            }
+            moduleRow.style.display = hasVisiblePerms ? '' : 'none';
+        });
+    }
+
+    function resetMatrixFilter(clearState = true) {
+        // Ripristina tutte le colonne
+        document.querySelectorAll('.role-col-header').forEach(th => {
+            th.style.display = '';
+            th.classList.remove('role-col-selected');
+        });
+
+        document.querySelectorAll('.role-cell').forEach(td => {
+            td.style.display = '';
+            td.classList.remove('role-cell-selected');
+        });
+
+        document.querySelectorAll('.module-row-spacer').forEach(td => {
+            td.colSpan = totalRolesCount;
+        });
+
+        // Ripristina tutte le righe
+        document.querySelectorAll('.perm-row').forEach(row => {
+            row.style.display = '';
+            row.classList.remove('perm-row-selected');
+        });
+
+        document.querySelectorAll('.module-row').forEach(row => {
+            row.style.display = '';
+        });
+
+        if (clearState) {
+            const filterBar = document.getElementById('matrixActiveFilterBar');
+            if (filterBar) filterBar.style.display = 'none';
+            currentMatrixFilter = null;
+
+            // Riapplica eventuale ricerca testuale
+            const searchInput = document.getElementById('permissionFilter');
+            if (searchInput && searchInput.value.trim()) {
+                searchInput.dispatchEvent(new Event('input'));
+            }
+        }
     }
 
     function submitCreateRole() {
@@ -316,6 +520,7 @@
                 const matches = permName.includes(query) || groupName.includes(query);
                 row.style.display = matches ? '' : 'none';
             });
+            updateModuleRowsVisibility();
         });
 
         document.querySelectorAll('.perm-toggle').forEach(checkbox => {
