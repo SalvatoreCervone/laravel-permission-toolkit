@@ -160,7 +160,7 @@ class UserController extends Controller
         }
 
         $request->validate([
-            'password' => ['required', 'string', 'min:6'],
+            'password' => ['required', 'string', 'min:6', 'confirmed'],
             'date_value' => ['nullable', 'string'],
             'update_date' => ['nullable'],
         ]);

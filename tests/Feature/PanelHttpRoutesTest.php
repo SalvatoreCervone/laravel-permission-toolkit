@@ -57,6 +57,7 @@ class PanelHttpRoutesTest extends TestCase
         $response->assertStatus(200);
         $response->assertSee('Reset Password');
         $response->assertSee('passwordModal');
+        $response->assertSee('password_confirmation');
     }
 
     /** @test */
@@ -64,6 +65,7 @@ class PanelHttpRoutesTest extends TestCase
     {
         $response = $this->actingAs($this->user)->post("/permission-manager/users/{$this->user->id}/password", [
             'password' => 'newSecretPass123',
+            'password_confirmation' => 'newSecretPass123',
             'update_date' => 0,
         ]);
 
@@ -81,12 +83,28 @@ class PanelHttpRoutesTest extends TestCase
     }
 
     /** @test */
+    public function it_fails_if_password_confirmation_does_not_match()
+    {
+        $response = $this->actingAs($this->user)->post("/permission-manager/users/{$this->user->id}/password", [
+            'password' => 'newSecretPass123',
+            'password_confirmation' => 'differentPassword',
+            'update_date' => 0,
+        ]);
+
+        $response->assertSessionHasErrors('password');
+        $this->user->refresh();
+
+        $this->assertFalse(Hash::check('newSecretPass123', $this->user->password));
+    }
+
+    /** @test */
     public function it_can_reset_password_and_update_configured_date_field()
     {
         $dateValue = '2026-10-15T10:30';
 
         $response = $this->actingAs($this->user)->post("/permission-manager/users/{$this->user->id}/password", [
             'password' => 'newSecretPass456',
+            'password_confirmation' => 'newSecretPass456',
             'date_value' => $dateValue,
             'update_date' => 1,
         ]);
@@ -114,6 +132,7 @@ class PanelHttpRoutesTest extends TestCase
 
         $response = $this->actingAs($this->user)->post("/permission-manager/users/{$this->user->id}/password", [
             'password' => 'safePass789',
+            'password_confirmation' => 'safePass789',
             'date_value' => '2026-10-15T10:30',
             'update_date' => 1,
         ]);

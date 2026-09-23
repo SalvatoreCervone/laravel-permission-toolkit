@@ -157,11 +157,32 @@
                             minlength="6"
                             placeholder="Inserisci o genera una nuova password..." 
                             autocomplete="new-password"
+                            oninput="checkPasswordMatch()"
                         >
                         <button type="button" class="btn btn-secondary" onclick="toggleModalPasswordVisibility()" title="Mostra/Nascondi password" style="padding: 0.5rem 0.75rem;">
                             👁️
                         </button>
                     </div>
+
+                    <!-- Password Confirmation Field -->
+                    <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; color: #e5e7eb;">
+                        Conferma Nuova Password <span style="color: #ef4444;">*</span>
+                    </label>
+                    <div style="margin-bottom: 0.5rem;">
+                        <input 
+                            type="password" 
+                            name="password_confirmation" 
+                            id="modal_password_confirmation_input" 
+                            class="input-control" 
+                            required 
+                            minlength="6"
+                            placeholder="Ripeti la password..." 
+                            autocomplete="new-password"
+                            oninput="checkPasswordMatch()"
+                        >
+                    </div>
+
+                    <div id="password_match_feedback" style="font-size: 0.75rem; margin-bottom: 0.5rem; display: none;"></div>
 
                     <div style="display: flex; gap: 0.5rem;">
                         <button type="button" class="btn btn-secondary" onclick="generateModalPassword()" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">
@@ -270,6 +291,12 @@
         }
     });
 
+    @if($errors->has('password') || $errors->has('password_confirmation'))
+        document.addEventListener('DOMContentLoaded', function() {
+            openPasswordModal();
+        });
+    @endif
+
     function generateModalPassword() {
         const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%&*';
         let pass = '';
@@ -280,8 +307,15 @@
         }
 
         const input = document.getElementById('modal_password_input');
+        const confirmInput = document.getElementById('modal_password_confirmation_input');
+        
         input.value = pass;
         input.type = 'text';
+        
+        if (confirmInput) {
+            confirmInput.value = pass;
+            confirmInput.type = 'text';
+        }
 
         const displayBox = document.getElementById('modal_password_display');
         const textSpan = document.getElementById('modal_password_text');
@@ -291,14 +325,43 @@
         displayBox.style.display = 'block';
         copyBtn.style.display = 'inline-flex';
 
+        checkPasswordMatch();
+
         if (typeof showToast === 'function') {
-            showToast('Password casuale generata!');
+            showToast('Password casuale generata e confermata!');
         }
     }
 
     function toggleModalPasswordVisibility() {
         const input = document.getElementById('modal_password_input');
-        input.type = input.type === 'password' ? 'text' : 'password';
+        const confirmInput = document.getElementById('modal_password_confirmation_input');
+        const newType = input.type === 'password' ? 'text' : 'password';
+        input.type = newType;
+        if (confirmInput) {
+            confirmInput.type = newType;
+        }
+    }
+
+    function checkPasswordMatch() {
+        const input = document.getElementById('modal_password_input');
+        const confirmInput = document.getElementById('modal_password_confirmation_input');
+        const feedback = document.getElementById('password_match_feedback');
+
+        if (!feedback || !confirmInput) return;
+
+        if (!confirmInput.value) {
+            feedback.style.display = 'none';
+            return;
+        }
+
+        feedback.style.display = 'block';
+        if (input.value === confirmInput.value) {
+            feedback.textContent = '✓ Le password corrispondono';
+            feedback.style.color = '#6ee7b7';
+        } else {
+            feedback.textContent = '✗ Le password non corrispondono';
+            feedback.style.color = '#fca5a5';
+        }
     }
 
     function copyModalPassword() {
