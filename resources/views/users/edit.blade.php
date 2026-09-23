@@ -226,7 +226,7 @@
                             type="datetime-local" 
                             name="date_value" 
                             id="modal_date_value" 
-                            value="{{ now()->format('Y-m-d\TH:i') }}" 
+                            value="{{ now()->format('Y-m-d\T00:00') }}" 
                             class="input-control" 
                             style="font-size: 0.85rem; margin-bottom: 0.5rem;"
                         >
@@ -385,15 +385,19 @@
 
     function setModalDateToday() {
         const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        document.getElementById('modal_date_value').value = now.toISOString().slice(0, 16);
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        document.getElementById('modal_date_value').value = year + '-' + month + '-' + day + 'T00:00';
     }
 
     function addModalDays(days) {
         const d = new Date();
         d.setDate(d.getDate() + days);
-        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-        document.getElementById('modal_date_value').value = d.toISOString().slice(0, 16);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        document.getElementById('modal_date_value').value = year + '-' + month + '-' + day + 'T00:00';
     }
 </script>
 @endpush

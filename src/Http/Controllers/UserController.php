@@ -179,7 +179,7 @@ class UserController extends Controller
             ? $request->boolean('update_date')
             : $request->filled('date_value');
 
-        $dateValue = $shouldUpdateDate ? ($request->input('date_value') ?: now()->toDateTimeString()) : null;
+        $dateValue = $shouldUpdateDate ? ($request->input('date_value') ?: now()->startOfDay()->toDateTimeString()) : null;
         $dateApplied = false;
 
         $table = $user->getTable();
