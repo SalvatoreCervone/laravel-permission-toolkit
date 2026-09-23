@@ -66,6 +66,21 @@ class SimulatorTest extends TestCase
         $result = $simulator->simulate($user, 'any.restricted.action');
 
         $this->assertTrue($result['is_allowed']);
+        $this->assertStringContainsString('super-admin', $result['reason']);
+    }
+
+    /** @test */
+    public function it_allows_super_admin_bypass_with_spaced_role_name()
+    {
+        $user = User::create(['name' => 'Big Boss', 'email' => 'bigboss@example.com']);
+        $superAdminRole = Role::create(['name' => 'Super Admin']);
+
+        $user->assignRole($superAdminRole);
+
+        $simulator = new AuthorizationSimulator();
+        $result = $simulator->simulate($user, 'any.restricted.action');
+
+        $this->assertTrue($result['is_allowed']);
         $this->assertStringContainsString('Super Admin', $result['reason']);
     }
 }

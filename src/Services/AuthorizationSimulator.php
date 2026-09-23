@@ -5,8 +5,6 @@ namespace SalvatoreCervone\PermissionToolkit\Services;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
-use Spatie\Permission\Contracts\Role;
-use Spatie\Permission\Contracts\Permission;
 
 class AuthorizationSimulator
 {
@@ -35,25 +33,37 @@ class AuthorizationSimulator
 
         // Step 2: Super Admin Check
         $superAdminConfig = config('permission-toolkit.super_admin', []);
-        $superAdminRole = $superAdminConfig['role_name'] ?? 'super-admin';
-        $hasSuperAdminRole = false;
+        $superAdminEnabled = $superAdminConfig['enabled'] ?? true;
+        $superAdminRoles = (array) ($superAdminConfig['role_name'] ?? ['super-admin', 'Super Admin']);
 
-        if (method_exists($user, 'hasRole') && $user->hasRole($superAdminRole)) {
-            $hasSuperAdminRole = true;
-            $steps[] = [
-                'step' => 'Super Admin Bypass',
-                'status' => 'PASS',
-                'detail' => "User possesses the bypass role '{$superAdminRole}'. Unrestricted access granted.",
-            ];
-            $isAllowed = true;
-            $decisionReason = "Bypassed via Super Admin role ({$superAdminRole})";
+        if ($superAdminEnabled) {
+            $userRoleNames = method_exists($user, 'getRoleNames') ? $user->getRoleNames()->toArray() : [];
 
-            return $this->formatResult(true, $decisionReason, $steps, $user, $ability, $target);
+            $matchingRole = $this->findMatchingSuperAdminRole($user, $superAdminRoles, $userRoleNames);
+
+            if ($matchingRole !== null) {
+                $steps[] = [
+                    'step' => 'Super Admin Bypass',
+                    'status' => 'PASS',
+                    'detail' => "User possesses the bypass role '{$matchingRole}'. Unrestricted access granted.",
+                ];
+                $isAllowed = true;
+                $decisionReason = "Bypassed via Super Admin role ({$matchingRole})";
+
+                return $this->formatResult(true, $decisionReason, $steps, $user, $ability, $target);
+            } else {
+                $rolesRequiredStr = implode(', ', $superAdminRoles);
+                $steps[] = [
+                    'step' => 'Super Admin Bypass',
+                    'status' => 'SKIP',
+                    'detail' => "User does not hold the bypass role [{$rolesRequiredStr}]. Proceeding to fine-grained checks.",
+                ];
+            }
         } else {
             $steps[] = [
                 'step' => 'Super Admin Bypass',
                 'status' => 'SKIP',
-                'detail' => "User does not hold the bypass role '{$superAdminRole}'. Proceeding to fine-grained checks.",
+                'detail' => "Super Admin bypass is disabled in configuration.",
             ];
         }
 
@@ -134,7 +144,6 @@ class AuthorizationSimulator
                     'status' => 'FAIL',
                     'detail' => "Gate evaluated to DENIED. Message: " . ($gateResponse->message() ?: 'Forbidden by policy'),
                 ];
-                // Policy has veto power if specifically evaluated
                 $isAllowed = false;
                 $decisionReason = "Denied by Laravel Policy: " . ($gateResponse->message() ?: 'Explicit policy refusal');
             }
@@ -151,6 +160,32 @@ class AuthorizationSimulator
         }
 
         return $this->formatResult($isAllowed, $decisionReason, $steps, $user, $ability, $target);
+    }
+
+    /**
+     * Robust check for super admin role (exact and normalized match).
+     */
+    protected function findMatchingSuperAdminRole(Authenticatable $user, array $configuredRoles, array $actualRoles): ?string
+    {
+        // 1. Direct match with hasRole
+        foreach ($configuredRoles as $role) {
+            if (method_exists($user, 'hasRole') && $user->hasRole($role)) {
+                return $role;
+            }
+        }
+
+        // 2. Normalized match (handles 'Super Admin' vs 'super-admin' vs 'super_admin' vs 'SuperAdmin')
+        foreach ($configuredRoles as $cfgRole) {
+            $normCfg = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $cfgRole));
+            foreach ($actualRoles as $actRole) {
+                $normAct = strtolower(preg_replace('/[^a-zA-Z0-9]/', '', $actRole));
+                if ($normCfg === $normAct) {
+                    return $actRole;
+                }
+            }
+        }
+
+        return null;
     }
 
     /**

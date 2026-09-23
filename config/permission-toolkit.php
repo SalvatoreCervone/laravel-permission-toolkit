@@ -10,7 +10,7 @@ return [
     | visual Permission Manager panel (Matrix, Simulator, Audit Logs, Doctor).
     |
     */
-    'prefix' => env('ROLEPERMISSION_PREFIX', 'permission-manager'),
+    'prefix' => env('PERMISSION_TOOLKIT_PREFIX', 'permission-manager'),
 
     'middleware' => ['web', 'auth'],
 
@@ -32,11 +32,12 @@ return [
     |
     | When enabled, users with this role will be recognized by the simulator
     | as having implicit access to all abilities (matching Gate::before conventions).
+    | Supports a string ('Super Admin' or 'super-admin') or an array of roles.
     |
     */
     'super_admin' => [
-        'enabled' => true,
-        'role_name' => 'super-admin',
+        'enabled' => env('PERMISSION_TOOLKIT_SUPER_ADMIN_ENABLED', true),
+        'role_name' => env('PERMISSION_TOOLKIT_SUPER_ADMIN_ROLE', 'super-admin'),
     ],
 
     /*
@@ -49,7 +50,7 @@ return [
     |
     */
     'audit' => [
-        'enabled' => true,
+        'enabled' => env('PERMISSION_TOOLKIT_AUDIT_ENABLED', true),
         'table' => 'permission_audit_logs',
         'retention_days' => 90,
     ],
