@@ -3,7 +3,8 @@ providers:
   - SalvatoreCervone\PermissionToolkit\PermissionToolkitServiceProvider
   - Workbench\App\Providers\WorkbenchServiceProvider
 
-migrations: true
+migrations:
+  - workbench/database/migrations
 
 seeders:
   - Workbench\Database\Seeders\DatabaseSeeder

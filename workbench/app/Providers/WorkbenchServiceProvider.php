@@ -2,8 +2,8 @@
 
 namespace Workbench\App\Providers;
 
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
+use Workbench\App\Http\Middleware\AutoLoginDemoUser;
 
 class WorkbenchServiceProvider extends ServiceProvider
 {
@@ -32,20 +32,11 @@ class WorkbenchServiceProvider extends ServiceProvider
         $this->app['config']->set('auth.providers.users.model', \Workbench\App\Models\User::class);
         $this->app['config']->set('permission-toolkit.user_model', \Workbench\App\Models\User::class);
 
-        // Auto-login demo admin user when viewing workbench in browser
-        if (! $this->app->runningInConsole()) {
-            $this->app->booted(function () {
-                if (! Auth::check()) {
-                    try {
-                        $admin = \Workbench\App\Models\User::first();
-                        if ($admin) {
-                            Auth::login($admin);
-                        }
-                    } catch (\Throwable) {
-                        // DB not yet migrated
-                    }
-                }
-            });
-        }
+        // Auto-login demo user and provide web session in workbench
+        $this->app['config']->set('permission-toolkit.middleware', [
+            'web',
+            AutoLoginDemoUser::class,
+            'auth',
+        ]);
     }
 }

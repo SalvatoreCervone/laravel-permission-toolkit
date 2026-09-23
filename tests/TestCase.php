@@ -34,7 +34,9 @@ abstract class TestCase extends Orchestra
             'prefix' => '',
         ]);
 
+        $app['config']->set('cache.default', 'array');
         $app['config']->set('auth.providers.users.model', User::class);
+        $app['config']->set('permission-toolkit.user_model', User::class);
     }
 
     protected function setUpDatabase()
@@ -48,7 +50,7 @@ abstract class TestCase extends Orchestra
         });
 
         // 2. Run Spatie Permission migration
-        $spatieMigration = require __DIR__ . '/../../vendor/spatie/laravel-permission/database/migrations/create_permission_tables.php.stub';
+        $spatieMigration = require __DIR__ . '/../vendor/spatie/laravel-permission/database/migrations/create_permission_tables.php.stub';
         $spatieMigration->up();
 
         // 3. Run Audit Log migration
