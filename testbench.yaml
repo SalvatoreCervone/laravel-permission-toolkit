@@ -1,0 +1,22 @@
+providers:
+  - Spatie\Permission\PermissionServiceProvider
+  - SalvatoreCervone\PermissionToolkit\PermissionToolkitServiceProvider
+  - Workbench\App\Providers\WorkbenchServiceProvider
+
+migrations: true
+
+seeders:
+  - Workbench\Database\Seeders\DatabaseSeeder
+
+workbench:
+  start: /permission-manager
+  install: true
+  health: false
+  discovers:
+    web: true
+    api: false
+    commands: false
+    components: false
+  build: []
+  assets: []
+  sync: []

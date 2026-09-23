@@ -38,18 +38,36 @@
   Scans your database for orphaned pivot records, empty roles, unused permissions, and Web vs API guard mismatches.
 - 💾 **JSON Export & Import (`permission:export` / `permission:import`)**  
   Effortlessly sync role-permission definitions between Local, Staging, and Production environments without manual DB dumps.
+- 🚀 **Interactive Local Demo (Orchestra Workbench)**  
+  Pre-packaged demo with realistic seeders, demo users, roles, and audit trail ready to launch in 1 command.
 
 ---
 
-## 📋 Requirements
+## 🚀 Try the Live Demo (Workbench)
 
-- **PHP**: `^8.2`
-- **Laravel**: `^10.0 | ^11.0 | ^12.0`
-- **Spatie Laravel Permission**: `^5.0 | ^6.0`
+To preview and test the complete visual panel locally:
+
+```bash
+git clone https://github.com/SalvatoreCervone/laravel-permission-toolkit.git
+cd laravel-permission-toolkit
+composer install
+composer run serve
+```
+
+Open your browser at:
+```text
+http://127.0.0.1:8000/permission-manager
+```
+
+### Pre-seeded Demo Data:
+- **Mario Rossi**: `admin@demo.test` (Role: `super-admin`)
+- **Laura Bianchi**: `manager@demo.test` (Role: `manager`)
+- **Giuseppe Verdi**: `accountant@demo.test` (Role: `accountant` + Direct Permission: `reports.special-audit`)
+- **Anna Neri**: `viewer@demo.test` (Role: `viewer`)
 
 ---
 
-## 📦 Installation
+## 📦 Installation in Your Application
 
 ### 1. Require the package via Composer
 
@@ -83,6 +101,23 @@ https://your-app.test/permission-manager
 - **Diagnostic Simulator**: `/permission-manager/simulator` (test interattivo di autorizzazione)
 - **Audit Trail**: `/permission-manager/audit-logs` (registro di sicurezza)
 - **Integrity Doctor**: `/permission-manager/doctor` (diagnostica database)
+
+---
+
+## 🛠️ CLI Commands
+
+```bash
+# Diagnostic Simulator (AWS IAM style)
+php artisan permission:simulate 42 "invoices.create"
+php artisan permission:simulate mario@demo.test "update" --model="App\Models\Invoice" --id=15
+
+# Database Health Check
+php artisan permission:doctor
+
+# Sync across environments
+php artisan permission:export --file=permissions.json
+php artisan permission:import --file=permissions.json
+```
 
 ---
 

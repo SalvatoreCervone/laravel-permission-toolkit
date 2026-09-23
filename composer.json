@@ -43,7 +43,9 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "SalvatoreCervone\\PermissionToolkit\\Tests\\": "tests/"
+            "SalvatoreCervone\\PermissionToolkit\\Tests\\": "tests/",
+            "Workbench\\App\\": "workbench/app/",
+            "Workbench\\Database\\Seeders\\": "workbench/database/seeders/"
         }
     },
     "extra": {
@@ -54,7 +56,13 @@
         }
     },
     "scripts": {
-        "test": "vendor/bin/phpunit"
+        "test": "vendor/bin/phpunit",
+        "serve": [
+            "Composer\\Config::disableProcessTimeout",
+            "@build",
+            "@php vendor/bin/testbench serve"
+        ],
+        "build": "@php vendor/bin/testbench workbench:build --ansi"
     },
     "minimum-stability": "stable",
     "prefer-stable": true
