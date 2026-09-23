@@ -39,10 +39,19 @@ class SimulatePermissionCommand extends Command
             return Command::FAILURE;
         }
 
-        $user = (new $userModelClass)->newQuery()
-            ->where('id', $userIdentifier)
-            ->orWhere('email', $userIdentifier)
-            ->first();
+        $userQuery = (new $userModelClass)->newQuery();
+        if (is_numeric($userIdentifier)) {
+            $userQuery->where('id', $userIdentifier);
+        } else {
+            $userQuery->where(function ($q) use ($userIdentifier) {
+                $q->where('email', $userIdentifier);
+                if (\Illuminate\Support\Facades\Schema::hasColumn($q->getModel()->getTable(), 'username')) {
+                    $q->orWhere('username', $userIdentifier);
+                }
+            });
+        }
+
+        $user = $userQuery->first();
 
         if (! $user) {
             $this->error("User not found matching [{$userIdentifier}].");

@@ -4,6 +4,7 @@ namespace SalvatoreCervone\PermissionToolkit\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Schema;
 use SalvatoreCervone\PermissionToolkit\Services\AuditLogger;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -25,14 +26,29 @@ class UserController extends Controller
 
         $query = (new $userModelClass)->newQuery()->with(['roles', 'permissions']);
 
-        if ($search = $request->get('search')) {
+        if ($search = trim($request->get('search', ''))) {
             $query->where(function ($q) use ($search) {
-                $q->where('id', $search);
-                if (\Illuminate\Support\Facades\Schema::hasColumn($q->getModel()->getTable(), 'name')) {
-                    $q->orWhere('name', 'like', "%{$search}%");
+                $table = $q->getModel()->getTable();
+                $hasCondition = false;
+
+                // Match integer ID only when search input is numeric to avoid PostgreSQL/SQLServer type mismatch
+                if (is_numeric($search)) {
+                    $q->where($q->getModel()->getKeyName(), $search);
+                    $hasCondition = true;
                 }
-                if (\Illuminate\Support\Facades\Schema::hasColumn($q->getModel()->getTable(), 'email')) {
-                    $q->orWhere('email', 'like', "%{$search}%");
+
+                if (Schema::hasColumn($table, 'name')) {
+                    $hasCondition ? $q->orWhere('name', 'like', "%{$search}%") : $q->where('name', 'like', "%{$search}%");
+                    $hasCondition = true;
+                }
+
+                if (Schema::hasColumn($table, 'email')) {
+                    $hasCondition ? $q->orWhere('email', 'like', "%{$search}%") : $q->where('email', 'like', "%{$search}%");
+                    $hasCondition = true;
+                }
+
+                if (Schema::hasColumn($table, 'username')) {
+                    $hasCondition ? $q->orWhere('username', 'like', "%{$search}%") : $q->where('username', 'like', "%{$search}%");
                 }
             });
         }

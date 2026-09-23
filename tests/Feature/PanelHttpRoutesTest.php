@@ -38,6 +38,15 @@ class PanelHttpRoutesTest extends TestCase
     }
 
     /** @test */
+    public function it_can_search_users_with_string_without_sql_error()
+    {
+        $response = $this->actingAs($this->user)->get('/permission-manager/users?search=cuva');
+
+        $response->assertStatus(200);
+        $response->assertSee('Gestione Accesso Utenti');
+    }
+
+    /** @test */
     public function it_can_access_simulator_page()
     {
         $response = $this->actingAs($this->user)->get('/permission-manager/simulator');
