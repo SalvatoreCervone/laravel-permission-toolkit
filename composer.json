@@ -38,18 +38,18 @@
     },
     "autoload": {
         "psr-4": {
-            "SalvatoreCervone\\LaravelRolePermission\\": "src/"
+            "SalvatoreCervone\\PermissionToolkit\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "SalvatoreCervone\\LaravelRolePermission\\Tests\\": "tests/"
+            "SalvatoreCervone\\PermissionToolkit\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "SalvatoreCervone\\LaravelRolePermission\\PermissionToolkitServiceProvider"
+                "SalvatoreCervone\\PermissionToolkit\\PermissionToolkitServiceProvider"
             ]
         }
     },
