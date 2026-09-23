@@ -55,8 +55,8 @@
             border-radius: 9999px;
             border: 1px solid #4338ca;
         }
-        nav { display: flex; gap: 0.5rem; }
-        nav a {
+        nav.main-nav { display: flex; gap: 0.5rem; }
+        nav.main-nav a {
             color: var(--text-muted);
             text-decoration: none;
             padding: 0.5rem 0.85rem;
@@ -65,11 +65,11 @@
             font-weight: 500;
             transition: all 0.2s;
         }
-        nav a:hover, nav a.active {
+        nav.main-nav a:hover, nav.main-nav a.active {
             color: var(--text-main);
             background-color: var(--bg-card-hover);
         }
-        nav a.active {
+        nav.main-nav a.active {
             border-bottom: 2px solid var(--primary);
             color: #a5b4fc;
         }
@@ -166,6 +166,60 @@
             outline: none;
             border-color: var(--primary);
         }
+
+        /* Fixed Pagination & Capped SVG */
+        nav[role="navigation"] {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        nav[role="navigation"] svg {
+            width: 1rem !important;
+            height: 1rem !important;
+            max-width: 1.25rem !important;
+            max-height: 1.25rem !important;
+            display: inline-block !important;
+            vertical-align: middle !important;
+        }
+        nav[role="navigation"] .flex,
+        nav[role="navigation"] div:last-child {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+        nav[role="navigation"] a,
+        nav[role="navigation"] span {
+            padding: 0.35rem 0.7rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+            background: #171f2e;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.8rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        nav[role="navigation"] a:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--primary);
+        }
+        nav[role="navigation"] span[aria-current="page"] {
+            background: var(--primary) !important;
+            border-color: var(--primary) !important;
+            color: #ffffff !important;
+            font-weight: 600;
+        }
+        nav[role="navigation"] span[aria-disabled="true"] {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
         #toast-container {
             position: fixed;
             bottom: 1.5rem;
@@ -197,7 +251,7 @@
         <a href="{{ route('permission-toolkit.matrix') }}" class="brand">
             🛡️ <span>Permission Toolkit</span>
         </a>
-        <nav>
+        <nav class="main-nav">
             <a href="{{ route('permission-toolkit.matrix') }}" class="{{ request()->routeIs('permission-toolkit.matrix') ? 'active' : '' }}">
                 🔲 Matrice Ruoli
             </a>
