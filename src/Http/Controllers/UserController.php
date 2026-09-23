@@ -151,6 +151,7 @@ class UserController extends Controller
 
     /**
      * Reset user password and optionally update an associated date/timestamp field.
+     * The target date column is strictly configured via config or .env.
      */
     public function resetPassword(Request $request, int $id)
     {
@@ -161,7 +162,7 @@ class UserController extends Controller
         $request->validate([
             'password' => ['required', 'string', 'min:6'],
             'date_value' => ['nullable', 'string'],
-            'date_field' => ['nullable', 'string', 'regex:/^[a-zA-Z0-9_]+$/'],
+            'update_date' => ['nullable'],
         ]);
 
         $userModelClass = config('permission-toolkit.user_model')
@@ -172,12 +173,17 @@ class UserController extends Controller
         // Update password
         $user->password = Hash::make($request->input('password'));
 
-        $dateField = $request->input('date_field') ?: config('permission-toolkit.password_reset.date_field', 'password_reset');
-        $dateValue = $request->input('date_value');
+        // The field name is strictly defined via config or .env
+        $dateField = config('permission-toolkit.password_reset.date_field', 'password_reset');
+        $shouldUpdateDate = $request->has('update_date')
+            ? $request->boolean('update_date')
+            : $request->filled('date_value');
+
+        $dateValue = $shouldUpdateDate ? ($request->input('date_value') ?: now()->toDateTimeString()) : null;
         $dateApplied = false;
 
         $table = $user->getTable();
-        if ($dateField && $dateValue && Schema::hasColumn($table, $dateField)) {
+        if ($shouldUpdateDate && $dateField && $dateValue && Schema::hasColumn($table, $dateField)) {
             $user->{$dateField} = Carbon::parse($dateValue);
             $dateApplied = true;
         }
@@ -202,8 +208,6 @@ class UserController extends Controller
         $msg = "Password per l'utente [{$user->name}] reimpostata con successo.";
         if ($dateApplied) {
             $msg .= " Campo [{$dateField}] aggiornato a [{$dateValue}].";
-        } elseif ($dateField && $dateValue) {
-            $msg .= " Nota: la colonna [{$dateField}] non esiste nella tabella [{$table}] ed è stata ignorata.";
         }
 
         return redirect()

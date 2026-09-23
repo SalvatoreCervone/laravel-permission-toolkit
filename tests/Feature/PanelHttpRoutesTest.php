@@ -50,19 +50,21 @@ class PanelHttpRoutesTest extends TestCase
     }
 
     /** @test */
-    public function it_can_access_user_edit_page_with_password_reset_section()
+    public function it_can_access_user_edit_page_with_password_reset_button_and_modal()
     {
         $response = $this->actingAs($this->user)->get("/permission-manager/users/{$this->user->id}");
 
         $response->assertStatus(200);
-        $response->assertSee('Reimposta Password');
+        $response->assertSee('Reset Password');
+        $response->assertSee('passwordModal');
     }
 
     /** @test */
-    public function it_can_reset_user_password()
+    public function it_can_reset_user_password_without_updating_date()
     {
         $response = $this->actingAs($this->user)->post("/permission-manager/users/{$this->user->id}/password", [
             'password' => 'newSecretPass123',
+            'update_date' => 0,
         ]);
 
         $response->assertRedirect("/permission-manager/users/{$this->user->id}");
@@ -79,14 +81,14 @@ class PanelHttpRoutesTest extends TestCase
     }
 
     /** @test */
-    public function it_can_reset_password_and_update_date_field()
+    public function it_can_reset_password_and_update_configured_date_field()
     {
         $dateValue = '2026-10-15T10:30';
 
         $response = $this->actingAs($this->user)->post("/permission-manager/users/{$this->user->id}/password", [
             'password' => 'newSecretPass456',
             'date_value' => $dateValue,
-            'date_field' => 'password_reset',
+            'update_date' => 1,
         ]);
 
         $response->assertRedirect("/permission-manager/users/{$this->user->id}");
@@ -108,10 +110,12 @@ class PanelHttpRoutesTest extends TestCase
     /** @test */
     public function it_handles_missing_date_column_gracefully()
     {
+        config(['permission-toolkit.password_reset.date_field' => 'non_existent_column']);
+
         $response = $this->actingAs($this->user)->post("/permission-manager/users/{$this->user->id}/password", [
             'password' => 'safePass789',
             'date_value' => '2026-10-15T10:30',
-            'date_field' => 'non_existent_column',
+            'update_date' => 1,
         ]);
 
         $response->assertRedirect("/permission-manager/users/{$this->user->id}");
