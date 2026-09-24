@@ -35,9 +35,9 @@
         position: sticky;
         top: 0;
         z-index: 30;
-        background-color: #171f2e;
+        background-color: var(--bg-header);
         border-bottom: 2px solid var(--border);
-        box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     }
 
     /* Colonna permessi fissa a sinistra */
@@ -45,9 +45,9 @@
         position: sticky;
         left: 0;
         z-index: 20;
-        background-color: #111827;
+        background-color: var(--bg-card);
         border-right: 2px solid var(--border);
-        box-shadow: 3px 0 6px rgba(0,0,0,0.4);
+        box-shadow: 3px 0 6px rgba(0,0,0,0.1);
     }
 
     /* Angolo in alto a sinistra (intersezione riga e colonna) */
@@ -56,9 +56,9 @@
         top: 0;
         left: 0;
         z-index: 60;
-        background-color: #171f2e;
+        background-color: var(--bg-header);
         border-right: 2px solid var(--border);
-        box-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+        box-shadow: 3px 3px 6px rgba(0,0,0,0.15);
     }
 
     /* Intestazione modulo sticky a sinistra */
@@ -67,21 +67,21 @@
         left: 0;
         z-index: 15;
         background: rgba(79, 70, 229, 0.15) !important;
-        color: #a5b4fc !important;
+        color: var(--accent-heading) !important;
         font-weight: 700;
         text-transform: uppercase;
         font-size: 0.75rem;
         letter-spacing: 0.05em;
         border-right: 2px solid var(--border);
-        box-shadow: 3px 0 6px rgba(0,0,0,0.4);
+        box-shadow: 3px 0 6px rgba(0,0,0,0.1);
     }
 
     /* Hover evidenziato su riga */
     #matrixTable tbody tr:hover td {
-        background-color: rgba(79, 70, 229, 0.06);
+        background-color: rgba(79, 70, 229, 0.05);
     }
     #matrixTable tbody tr:hover td:first-child {
-        background-color: #1e2538;
+        background-color: var(--bg-card-hover);
     }
 
     /* Elementi Cliccabili per Filtro Rapido */
