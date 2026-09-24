@@ -1,22 +1,22 @@
 @extends('permission-toolkit::layouts.app')
 
-@section('title', 'Diagnostic Simulator')
+@section('title', __('permission-toolkit::messages.sim_title'))
 
 @section('content')
 <div style="display: grid; grid-template-columns: 380px 1fr; gap: 1.5rem;">
     <!-- Simulator Form -->
     <div class="card" style="height: fit-content;">
         <div class="card-header">
-            <h2 class="card-title">🔍 Configura Test</h2>
+            <h2 class="card-title">{{ __('permission-toolkit::messages.sim_config_title') }}</h2>
         </div>
 
         <form method="GET" action="{{ route('permission-toolkit.simulator') }}">
             <div style="margin-bottom: 1rem;">
                 <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem; font-weight: 500;">
-                    1. Utente di Test
+                    {{ __('permission-toolkit::messages.sim_user_label') }}
                 </label>
                 <select name="user_id" class="input-control" required>
-                    <option value="">-- Seleziona Utente --</option>
+                    <option value="">{{ __('permission-toolkit::messages.sim_user_placeholder') }}</option>
                     @foreach($users as $u)
                         <option value="{{ $u->id }}" {{ $selectedUserId == $u->id ? 'selected' : '' }}>
                             {{ $u->name ?? $u->email }} (ID: {{ $u->id }})
@@ -27,7 +27,7 @@
 
             <div style="margin-bottom: 1rem;">
                 <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem; font-weight: 500;">
-                    2. Abilità / Permesso da Testare
+                    {{ __('permission-toolkit::messages.sim_ability_label') }}
                 </label>
                 <input 
                     type="text" 
@@ -35,7 +35,7 @@
                     list="permissionsList" 
                     class="input-control" 
                     value="{{ $selectedAbility }}" 
-                    placeholder="es. invoices.edit o view" 
+                    placeholder="{{ __('permission-toolkit::messages.sim_ability_placeholder') }}" 
                     required
                 >
                 <datalist id="permissionsList">
@@ -47,32 +47,32 @@
 
             <div style="margin-bottom: 1rem;">
                 <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem; font-weight: 500;">
-                    3. Modello Target (Opzionale per Policy)
+                    {{ __('permission-toolkit::messages.sim_model_label') }}
                 </label>
                 <input 
                     type="text" 
                     name="model_class" 
                     class="input-control" 
                     value="{{ $modelClass }}" 
-                    placeholder="es. App\Models\Invoice"
+                    placeholder="{{ __('permission-toolkit::messages.sim_model_placeholder') }}"
                 >
             </div>
 
             <div style="margin-bottom: 1.5rem;">
                 <label style="display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.35rem; font-weight: 500;">
-                    4. ID Record Modello (Opzionale)
+                    {{ __('permission-toolkit::messages.sim_id_label') }}
                 </label>
                 <input 
                     type="number" 
                     name="model_id" 
                     class="input-control" 
                     value="{{ $modelId }}" 
-                    placeholder="es. 42"
+                    placeholder="{{ __('permission-toolkit::messages.sim_id_placeholder') }}"
                 >
             </div>
 
             <button type="submit" class="btn" style="width: 100%; justify-content: center;">
-                ⚡ Esegui Simulazione
+                {{ __('permission-toolkit::messages.sim_btn_run') }}
             </button>
         </form>
     </div>
@@ -91,18 +91,18 @@
                         </div>
                     </div>
                     <div style="text-align: right; font-size: 0.8rem; color: var(--text-muted);">
-                        Simulato alle: {{ \Carbon\Carbon::parse($simulationResult['timestamp'])->format('H:i:s') }}
+                        {{ __('permission-toolkit::messages.sim_at', ['time' => \Carbon\Carbon::parse($simulationResult['timestamp'])->format('H:i:s')]) }}
                     </div>
                 </div>
 
                 <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.75rem 1rem; margin-bottom: 1.5rem; font-size: 0.85rem; display: flex; gap: 2rem;">
-                    <div><strong>Utente:</strong> {{ $simulationResult['user']['name'] }} (ID: {{ $simulationResult['user']['id'] }})</div>
-                    <div><strong>Ruoli Spatie:</strong> {{ implode(', ', $simulationResult['user']['roles']) ?: 'Nessun ruolo' }}</div>
-                    <div><strong>Abilità:</strong> <code>{{ $simulationResult['ability'] }}</code></div>
+                    <div><strong>{{ __('permission-toolkit::messages.sim_info_user') }}</strong> {{ $simulationResult['user']['name'] }} (ID: {{ $simulationResult['user']['id'] }})</div>
+                    <div><strong>{{ __('permission-toolkit::messages.sim_info_roles') }}</strong> {{ implode(', ', $simulationResult['user']['roles']) ?: __('permission-toolkit::messages.sim_info_no_roles') }}</div>
+                    <div><strong>{{ __('permission-toolkit::messages.sim_info_ability') }}</strong> <code>{{ $simulationResult['ability'] }}</code></div>
                 </div>
 
                 <h3 style="font-size: 0.95rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 0.75rem;">
-                    Tracciamento Passo-Passo (IAM Trace)
+                    {{ __('permission-toolkit::messages.sim_trace_heading') }}
                 </h3>
 
                 <div class="table-responsive">
@@ -110,16 +110,27 @@
                         <thead>
                             <tr>
                                 <th style="width: 50px;">#</th>
-                                <th style="width: 200px;">Fase di Ispezione</th>
-                                <th style="width: 100px; text-align: center;">Esito</th>
-                                <th>Dettaglio Diagnostico</th>
+                                <th style="width: 200px;">{{ __('permission-toolkit::messages.sim_th_step') }}</th>
+                                <th style="width: 100px; text-align: center;">{{ __('permission-toolkit::messages.sim_th_status') }}</th>
+                                <th>{{ __('permission-toolkit::messages.sim_th_detail') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($simulationResult['steps'] as $idx => $step)
+                                @php
+                                    $stepKey = match($step['step']) {
+                                        'User Identity' => 'sim_step_user_identity',
+                                        'Super Admin Bypass' => 'sim_step_super_admin',
+                                        'Direct Permission' => 'sim_step_direct_permission',
+                                        'Role Permission Inheritance' => 'sim_step_role_inheritance',
+                                        'Policy / Gate Evaluation' => 'sim_step_policy_gate',
+                                        default => null,
+                                    };
+                                    $stepLabel = $stepKey ? __('permission-toolkit::messages.' . $stepKey) : $step['step'];
+                                @endphp
                                 <tr>
                                     <td style="color: var(--text-muted);">{{ $idx + 1 }}</td>
-                                    <td style="font-weight: 500;">{{ $step['step'] }}</td>
+                                    <td style="font-weight: 500;">{{ $stepLabel }}</td>
                                     <td style="text-align: center;">
                                         @if($step['status'] === 'PASS')
                                             <span class="badge badge-success">PASS</span>
@@ -139,9 +150,9 @@
         @else
             <div class="card" style="text-align: center; padding: 4rem 2rem; color: var(--text-muted);">
                 <div style="font-size: 2.5rem; margin-bottom: 1rem;">🛡️</div>
-                <h3 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.5rem;">Nessuna simulazione attiva</h3>
+                <h3 style="font-size: 1.1rem; color: var(--text-main); margin-bottom: 0.5rem;">{{ __('permission-toolkit::messages.sim_empty_title') }}</h3>
                 <p style="font-size: 0.875rem; max-width: 500px; margin: 0 auto;">
-                    Seleziona un utente e specifica un'abilità dal form a sinistra per diagnosticare passo-passo perché l'accesso viene autorizzato o negato con codice 403.
+                    {{ __('permission-toolkit::messages.sim_empty_desc') }}
                 </p>
             </div>
         @endif

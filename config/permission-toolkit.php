@@ -16,6 +16,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Localization / Language
+    |--------------------------------------------------------------------------
+    |
+    | Default language for the Permission Toolkit web interface ('it' or 'en').
+    | If set to null, it will default to the current application locale.
+    | Users can also toggle the language in the top navbar.
+    |
+    */
+    'locale' => env('PERMISSION_TOOLKIT_LOCALE', 'it'),
+
+    /*
+    |--------------------------------------------------------------------------
     | User Model
     |--------------------------------------------------------------------------
     |

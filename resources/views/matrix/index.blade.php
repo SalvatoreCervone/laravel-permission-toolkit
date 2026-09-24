@@ -1,6 +1,6 @@
 @extends('permission-toolkit::layouts.app')
 
-@section('title', 'Matrice Ruoli & Permessi')
+@section('title', __('permission-toolkit::messages.matrix_title'))
 
 @push('styles')
 <style>
@@ -130,21 +130,21 @@
     <div class="card-header" style="margin-bottom: 0; flex-wrap: wrap; gap: 1rem;">
         <div>
             <h1 class="card-title" style="display: flex; align-items: center; gap: 0.75rem;">
-                Matrice Ruoli & Permessi
-                <span class="badge badge-info" style="font-size: 0.75rem;">{{ $roles->count() }} Ruoli</span>
-                <span class="badge badge-success" style="font-size: 0.75rem;">{{ $permissions->count() }} Permessi</span>
+                {{ __('permission-toolkit::messages.matrix_title') }}
+                <span class="badge badge-info" style="font-size: 0.75rem;">{{ $roles->count() }} {{ __('permission-toolkit::messages.matrix_roles_count') }}</span>
+                <span class="badge badge-success" style="font-size: 0.75rem;">{{ $permissions->count() }} {{ __('permission-toolkit::messages.matrix_perms_count') }}</span>
             </h1>
             <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.2rem;">
-                💡 <strong>Filtro rapido</strong>: clicca sul nome di un <strong>permesso</strong> per visualizzare solo i ruoli che lo hanno, oppure clicca sull'etichetta di un <strong>ruolo</strong> per visualizzare solo i permessi assegnati.
+                {!! __('permission-toolkit::messages.matrix_quick_filter_tip') !!}
             </p>
         </div>
         <div style="display: flex; gap: 0.75rem; align-items: center;">
-            <input type="text" id="permissionFilter" class="input-control" style="width: 240px;" placeholder="🔍 Filtra permesso o modulo...">
+            <input type="text" id="permissionFilter" class="input-control" style="width: 240px;" placeholder="{{ __('permission-toolkit::messages.matrix_search_placeholder') }}">
             <button type="button" class="btn" onclick="openModal('modalRole')">
-                + Nuovo Ruolo
+                {{ __('permission-toolkit::messages.matrix_new_role_btn') }}
             </button>
             <button type="button" class="btn btn-secondary" onclick="openModal('modalPerm')">
-                + Nuovo Permesso
+                {{ __('permission-toolkit::messages.matrix_new_perm_btn') }}
             </button>
         </div>
     </div>
@@ -157,7 +157,7 @@
         <span id="matrixActiveFilterText" style="color: #e0e7ff;"></span>
     </div>
     <button type="button" class="btn btn-secondary" onclick="resetMatrixFilter()" style="padding: 0.25rem 0.75rem; font-size: 0.8rem; border-color: #6366f1;">
-        ✕ Rimuovi Filtro
+        {{ __('permission-toolkit::messages.matrix_clear_filter') }}
     </button>
 </div>
 
@@ -166,18 +166,18 @@
         <thead>
             <tr>
                 <th style="min-width: 320px; width: 320px;">
-                    Modulo / Permesso Spatie
+                    {{ __('permission-toolkit::messages.matrix_th_module_perm') }}
                 </th>
                 @foreach($roles as $role)
                     <th class="role-col-header" data-role-id="{{ $role->id }}" style="text-align: center; min-width: 130px; width: 130px;">
                         <div style="display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
                             <span class="badge badge-info role-filter-btn" 
                                   onclick="filterByRole({{ $role->id }}, '{{ addslashes($role->name) }}')"
-                                  title="🔍 Clicca per mostrare solo i permessi assegnati a questo ruolo"
+                                  title="{{ __('permission-toolkit::messages.matrix_role_filter_tooltip') }}"
                                   style="font-size: 0.7rem; white-space: nowrap;">
                                 {{ $role->name }}
                             </span>
-                            <button type="button" onclick="event.stopPropagation(); deleteRole({{ $role->id }}, '{{ addslashes($role->name) }}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.75rem;" title="Elimina ruolo">✕</button>
+                            <button type="button" onclick="event.stopPropagation(); deleteRole({{ $role->id }}, '{{ addslashes($role->name) }}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.75rem;" title="{{ __('permission-toolkit::messages.matrix_delete_role_title') }}">✕</button>
                         </div>
                         <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.15rem;">{{ $role->guard_name }}</div>
                     </th>
@@ -188,7 +188,7 @@
             @forelse($groupedPermissions as $group => $perms)
                 <tr class="module-row" data-group-name="{{ strtolower($group) }}" style="background: rgba(79, 70, 229, 0.08);">
                     <td class="module-header-sticky" style="padding: 0.4rem 1rem;">
-                        📂 Modulo: {{ $group }} ({{ count($perms) }})
+                        {{ __('permission-toolkit::messages.matrix_module_prefix', ['group' => $group, 'count' => count($perms)]) }}
                     </td>
                     <td class="module-row-spacer" colspan="{{ count($roles) }}" style="background: rgba(79, 70, 229, 0.08); border-bottom: 1px solid var(--border);"></td>
                 </tr>
@@ -197,11 +197,11 @@
                         <td style="font-family: monospace; font-size: 0.85rem; display: flex; align-items: center; justify-content: space-between; min-width: 320px;">
                             <span class="perm-name-clickable" 
                                   onclick="filterByPermission({{ $permission->id }}, '{{ addslashes($permission->name) }}')"
-                                  title="🔍 Clicca per mostrare solo i ruoli che hanno questo permesso">
+                                  title="{{ __('permission-toolkit::messages.matrix_perm_filter_tooltip') }}">
                                 <strong>{{ $permission->name }}</strong>
                                 <span style="font-size: 0.7rem; color: var(--text-muted); margin-left: 0.4rem;">({{ $permission->guard_name }})</span>
                             </span>
-                            <button type="button" onclick="event.stopPropagation(); deletePermission({{ $permission->id }}, '{{ addslashes($permission->name) }}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.75rem; padding: 0.2rem;" title="Elimina permesso">✕</button>
+                            <button type="button" onclick="event.stopPropagation(); deletePermission({{ $permission->id }}, '{{ addslashes($permission->name) }}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.75rem; padding: 0.2rem;" title="{{ __('permission-toolkit::messages.matrix_delete_perm_title') }}">✕</button>
                         </td>
                         @foreach($roles as $role)
                             @php
@@ -225,7 +225,7 @@
             @empty
                 <tr>
                     <td colspan="{{ count($roles) + 1 }}" style="text-align: center; color: var(--text-muted); padding: 3rem;">
-                        Nessun permesso trovato nel database Spatie.
+                        {{ __('permission-toolkit::messages.matrix_empty') }}
                     </td>
                 </tr>
             @endforelse
@@ -236,18 +236,18 @@
 <!-- Modal Crea Ruolo -->
 <div id="modalRole" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem; border-radius: 0.5rem; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
-        <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">Crea Nuovo Ruolo Spatie</h3>
+        <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">{{ __('permission-toolkit::messages.matrix_modal_role_title') }}</h3>
         <div style="margin-bottom: 1rem;">
-            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">Nome Ruolo</label>
-            <input type="text" id="newRoleName" class="input-control" placeholder="es. manager o supervisor">
+            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">{{ __('permission-toolkit::messages.matrix_modal_role_name') }}</label>
+            <input type="text" id="newRoleName" class="input-control" placeholder="{{ __('permission-toolkit::messages.matrix_modal_role_placeholder') }}">
         </div>
         <div style="margin-bottom: 1.5rem;">
-            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">Guard (opzionale)</label>
+            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">{{ __('permission-toolkit::messages.matrix_modal_guard_label') }}</label>
             <input type="text" id="newRoleGuard" class="input-control" value="web">
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
-            <button type="button" class="btn btn-secondary" onclick="closeModal('modalRole')">Annulla</button>
-            <button type="button" class="btn" onclick="submitCreateRole()">Crea Ruolo</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modalRole')">{{ __('permission-toolkit::messages.btn_cancel') }}</button>
+            <button type="button" class="btn" onclick="submitCreateRole()">{{ __('permission-toolkit::messages.matrix_modal_create_role_btn') }}</button>
         </div>
     </div>
 </div>
@@ -255,18 +255,18 @@
 <!-- Modal Crea Permesso -->
 <div id="modalPerm" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
     <div style="background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem; border-radius: 0.5rem; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
-        <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">Crea Nuovo Permesso Spatie</h3>
+        <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">{{ __('permission-toolkit::messages.matrix_modal_perm_title') }}</h3>
         <div style="margin-bottom: 1rem;">
-            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">Nome Permesso</label>
-            <input type="text" id="newPermName" class="input-control" placeholder="es. invoices.delete o users.export">
+            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">{{ __('permission-toolkit::messages.matrix_modal_perm_name') }}</label>
+            <input type="text" id="newPermName" class="input-control" placeholder="{{ __('permission-toolkit::messages.matrix_modal_perm_placeholder') }}">
         </div>
         <div style="margin-bottom: 1.5rem;">
-            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">Guard (opzionale)</label>
+            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">{{ __('permission-toolkit::messages.matrix_modal_guard_label') }}</label>
             <input type="text" id="newPermGuard" class="input-control" value="web">
         </div>
         <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
-            <button type="button" class="btn btn-secondary" onclick="closeModal('modalPerm')">Annulla</button>
-            <button type="button" class="btn" onclick="submitCreatePerm()">Crea Permesso</button>
+            <button type="button" class="btn btn-secondary" onclick="closeModal('modalPerm')">{{ __('permission-toolkit::messages.btn_cancel') }}</button>
+            <button type="button" class="btn" onclick="submitCreatePerm()">{{ __('permission-toolkit::messages.matrix_modal_create_perm_btn') }}</button>
         </div>
     </div>
 </div>
@@ -327,10 +327,14 @@
         const filterBar = document.getElementById('matrixActiveFilterBar');
         const filterText = document.getElementById('matrixActiveFilterText');
         filterBar.style.display = 'flex';
-        filterText.innerHTML = `Filtro Permesso: <strong style="color: #a5b4fc; font-family: monospace;">${permName}</strong> — Mostrando solo i <strong>${matchingRoleIds.size}</strong> ruoli che lo possiedono.`;
+        filterText.innerHTML = `{!! addslashes(__('permission-toolkit::messages.matrix_filter_perm_text', ['name' => '__NAME__', 'count' => '__COUNT__'])) !!}`
+            .replace('__NAME__', permName)
+            .replace('__COUNT__', matchingRoleIds.size);
 
         if (typeof showToast === 'function') {
-            showToast(`Filtrati ${matchingRoleIds.size} ruoli con permesso [${permName}]`);
+            showToast(`{{ __('permission-toolkit::messages.matrix_toast_perm_filtered', ['count' => '__COUNT__', 'perm' => '__PERM__']) }}`
+                .replace('__COUNT__', matchingRoleIds.size)
+                .replace('__PERM__', permName));
         }
     }
 
@@ -367,10 +371,14 @@
         const filterBar = document.getElementById('matrixActiveFilterBar');
         const filterText = document.getElementById('matrixActiveFilterText');
         filterBar.style.display = 'flex';
-        filterText.innerHTML = `Filtro Ruolo: <strong style="color: #a5b4fc;">${roleName}</strong> — Mostrando solo i <strong>${matchCount}</strong> permessi assegnati a questo ruolo.`;
+        filterText.innerHTML = `{!! addslashes(__('permission-toolkit::messages.matrix_filter_role_text', ['name' => '__NAME__', 'count' => '__COUNT__'])) !!}`
+            .replace('__NAME__', roleName)
+            .replace('__COUNT__', matchCount);
 
         if (typeof showToast === 'function') {
-            showToast(`Filtrati ${matchCount} permessi per il ruolo [${roleName}]`);
+            showToast(`{{ __('permission-toolkit::messages.matrix_toast_role_filtered', ['count' => '__COUNT__', 'role' => '__ROLE__']) }}`
+                .replace('__COUNT__', matchCount)
+                .replace('__ROLE__', roleName));
         }
     }
 
@@ -431,7 +439,7 @@
     function submitCreateRole() {
         const name = document.getElementById('newRoleName').value.trim();
         const guard = document.getElementById('newRoleGuard').value.trim();
-        if (!name) return alert('Inserisci il nome del ruolo');
+        if (!name) return alert("{{ __('permission-toolkit::messages.matrix_enter_role_name') }}");
 
         fetch("{{ route('permission-toolkit.roles.store') }}", {
             method: 'POST',
@@ -447,7 +455,7 @@
             if (d.success) {
                 location.reload();
             } else {
-                showToast(d.message || 'Errore', 'danger');
+                showToast(d.message || "{{ __('permission-toolkit::messages.error') }}", 'danger');
             }
         });
     }
@@ -455,7 +463,7 @@
     function submitCreatePerm() {
         const name = document.getElementById('newPermName').value.trim();
         const guard = document.getElementById('newPermGuard').value.trim();
-        if (!name) return alert('Inserisci il nome del permesso');
+        if (!name) return alert("{{ __('permission-toolkit::messages.matrix_enter_perm_name') }}");
 
         fetch("{{ route('permission-toolkit.permissions.store') }}", {
             method: 'POST',
@@ -471,13 +479,14 @@
             if (d.success) {
                 location.reload();
             } else {
-                showToast(d.message || 'Errore', 'danger');
+                showToast(d.message || "{{ __('permission-toolkit::messages.error') }}", 'danger');
             }
         });
     }
 
     function deleteRole(id, name) {
-        if (!confirm(`Sei sicuro di voler eliminare il ruolo [${name}]?`)) return;
+        const msg = `{{ __('permission-toolkit::messages.matrix_confirm_delete_role', ['name' => '__NAME__']) }}`.replace('__NAME__', name);
+        if (!confirm(msg)) return;
 
         fetch(`{{ url(config('permission-toolkit.prefix', 'permission-manager')) }}/roles/${id}`, {
             method: 'DELETE',
@@ -489,12 +498,13 @@
         .then(r => r.json())
         .then(d => {
             if (d.success) location.reload();
-            else showToast(d.message || 'Errore', 'danger');
+            else showToast(d.message || "{{ __('permission-toolkit::messages.error') }}", 'danger');
         });
     }
 
     function deletePermission(id, name) {
-        if (!confirm(`Sei sicuro di voler eliminare il permesso [${name}]?`)) return;
+        const msg = `{{ __('permission-toolkit::messages.matrix_confirm_delete_perm', ['name' => '__NAME__']) }}`.replace('__NAME__', name);
+        if (!confirm(msg)) return;
 
         fetch(`{{ url(config('permission-toolkit.prefix', 'permission-manager')) }}/permissions/${id}`, {
             method: 'DELETE',
@@ -506,7 +516,7 @@
         .then(r => r.json())
         .then(d => {
             if (d.success) location.reload();
-            else showToast(d.message || 'Errore', 'danger');
+            else showToast(d.message || "{{ __('permission-toolkit::messages.error') }}", 'danger');
         });
     }
 
@@ -552,13 +562,13 @@
                         showToast(data.message);
                     } else {
                         this.checked = !isChecked;
-                        showToast('Errore durante l\'aggiornamento', 'danger');
+                        showToast("{{ __('permission-toolkit::messages.update_error') }}", 'danger');
                     }
                 })
                 .catch(err => {
                     this.disabled = false;
                     this.checked = !isChecked;
-                    showToast('Errore di connessione al server', 'danger');
+                    showToast("{{ __('permission-toolkit::messages.server_error') }}", 'danger');
                 });
             });
         });

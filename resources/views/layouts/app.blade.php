@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Role & Permission Manager') - Spatie Toolkit</title>
+    <title>@yield('title', __('permission-toolkit::messages.layout_title')) - Spatie Toolkit</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
     <style>
@@ -252,26 +252,44 @@
 </head>
 <body>
     <header>
-        <a href="{{ route('permission-toolkit.matrix') }}" class="brand">
-            🛡️ <span>Permission Toolkit</span>
-        </a>
-        <nav class="main-nav">
-            <a href="{{ route('permission-toolkit.matrix') }}" class="{{ request()->routeIs('permission-toolkit.matrix') ? 'active' : '' }}">
-                🔲 Matrice Ruoli
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+            <a href="{{ route('permission-toolkit.matrix') }}" class="brand">
+                🛡️ <span>Permission Toolkit</span>
             </a>
-            <a href="{{ route('permission-toolkit.users.index') }}" class="{{ request()->routeIs('permission-toolkit.users.*') ? 'active' : '' }}">
-                👥 Gestione Utenti
-            </a>
-            <a href="{{ route('permission-toolkit.simulator') }}" class="{{ request()->routeIs('permission-toolkit.simulator') ? 'active' : '' }}">
-                🔍 Diagnostic Simulator
-            </a>
-            <a href="{{ route('permission-toolkit.audit') }}" class="{{ request()->routeIs('permission-toolkit.audit') ? 'active' : '' }}">
-                📜 Audit Trail
-            </a>
-            <a href="{{ route('permission-toolkit.doctor') }}" class="{{ request()->routeIs('permission-toolkit.doctor') ? 'active' : '' }}">
-                🩺 Integrity Doctor
-            </a>
-        </nav>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+            <nav class="main-nav">
+                <a href="{{ route('permission-toolkit.matrix') }}" class="{{ request()->routeIs('permission-toolkit.matrix') || request()->routeIs('permission-toolkit.index') ? 'active' : '' }}">
+                    🔲 {{ __('permission-toolkit::messages.nav_matrix') }}
+                </a>
+                <a href="{{ route('permission-toolkit.users.index') }}" class="{{ request()->routeIs('permission-toolkit.users.*') ? 'active' : '' }}">
+                    👥 {{ __('permission-toolkit::messages.nav_users') }}
+                </a>
+                <a href="{{ route('permission-toolkit.simulator') }}" class="{{ request()->routeIs('permission-toolkit.simulator') ? 'active' : '' }}">
+                    🔍 {{ __('permission-toolkit::messages.nav_simulator') }}
+                </a>
+                <a href="{{ route('permission-toolkit.audit') }}" class="{{ request()->routeIs('permission-toolkit.audit') ? 'active' : '' }}">
+                    📜 {{ __('permission-toolkit::messages.nav_audit') }}
+                </a>
+                <a href="{{ route('permission-toolkit.doctor') }}" class="{{ request()->routeIs('permission-toolkit.doctor') ? 'active' : '' }}">
+                    🩺 {{ __('permission-toolkit::messages.nav_doctor') }}
+                </a>
+            </nav>
+
+            <!-- Language Switcher -->
+            <div class="lang-switcher" style="display: inline-flex; align-items: center; gap: 0.2rem; background: #171f2e; border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.2rem 0.35rem;">
+                <a href="{{ route('permission-toolkit.locale', 'it') }}" 
+                   style="text-decoration: none; font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 0.25rem; transition: all 0.2s; {{ app()->getLocale() === 'it' ? 'background: var(--primary); color: #ffffff;' : 'color: var(--text-muted);' }}"
+                   title="Italiano">
+                    🇮🇹 IT
+                </a>
+                <a href="{{ route('permission-toolkit.locale', 'en') }}" 
+                   style="text-decoration: none; font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 0.25rem; transition: all 0.2s; {{ app()->getLocale() === 'en' ? 'background: var(--primary); color: #ffffff;' : 'color: var(--text-muted);' }}"
+                   title="English">
+                    🇬🇧 EN
+                </a>
+            </div>
+        </div>
     </header>
 
     <main>

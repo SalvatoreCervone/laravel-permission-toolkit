@@ -41,7 +41,7 @@ class PermissionController extends Controller
         return response()->json([
             'success' => true,
             'permission' => $permission,
-            'message' => "Permesso [{$permission->name}] creato con successo!",
+            'message' => __('permission-toolkit::messages.msg_perm_created', ['name' => $permission->name]),
         ]);
     }
 
@@ -66,7 +66,7 @@ class PermissionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Permesso [{$permName}] eliminato.",
+            'message' => __('permission-toolkit::messages.msg_perm_deleted', ['name' => $permName]),
         ]);
     }
 }

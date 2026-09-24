@@ -33,6 +33,7 @@ class PermissionToolkitServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'permission-toolkit');
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'permission-toolkit');
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
 
@@ -41,6 +42,15 @@ class PermissionToolkitServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../config/permission-toolkit.php' => config_path('permission-toolkit.php'),
             ], 'permission-toolkit-config');
+
+            // Publish Translations
+            $langPath = method_exists($this->app, 'langPath')
+                ? $this->app->langPath('vendor/permission-toolkit')
+                : resource_path('lang/vendor/permission-toolkit');
+
+            $this->publishes([
+                __DIR__ . '/../resources/lang' => $langPath,
+            ], 'permission-toolkit-translations');
 
             // Publish Views
             $this->publishes([

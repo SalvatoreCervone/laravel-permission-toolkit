@@ -3,16 +3,25 @@
 use Illuminate\Support\Facades\Route;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\AuditLogController;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\DoctorController;
+use SalvatoreCervone\PermissionToolkit\Http\Controllers\LocaleController;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\MatrixController;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\PermissionController;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\RoleController;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\SimulatorController;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\UserController;
+use SalvatoreCervone\PermissionToolkit\Http\Middleware\SetLocale;
 
 $prefix = config('permission-toolkit.prefix', 'permission-manager');
 $middleware = config('permission-toolkit.middleware', ['web', 'auth']);
 
+if (! in_array(SetLocale::class, $middleware)) {
+    $middleware[] = SetLocale::class;
+}
+
 Route::group(['prefix' => $prefix, 'middleware' => $middleware, 'as' => 'permission-toolkit.'], function () {
+    // Language Switcher
+    Route::get('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale');
+
     // Role-Permission Interactive Matrix
     Route::get('/', [MatrixController::class, 'index'])->name('index');
     Route::get('/matrix', [MatrixController::class, 'index'])->name('matrix');

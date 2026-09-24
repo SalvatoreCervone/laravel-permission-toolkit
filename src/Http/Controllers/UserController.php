@@ -146,7 +146,7 @@ class UserController extends Controller
 
         return redirect()
             ->route('permission-toolkit.users.edit', $id)
-            ->with('status', "Accessi per l'utente [{$user->name}] aggiornati con successo.");
+            ->with('status', __('permission-toolkit::messages.msg_user_access_updated', ['name' => $user->name]));
     }
 
     /**
@@ -156,7 +156,7 @@ class UserController extends Controller
     public function resetPassword(Request $request, int $id)
     {
         if (! config('permission-toolkit.password_reset.enabled', true)) {
-            abort(403, 'La funzionalità di reset password è disabilitata da configurazione.');
+            abort(403, __('permission-toolkit::messages.msg_pwd_reset_disabled'));
         }
 
         $request->validate([
@@ -205,9 +205,9 @@ class UserController extends Controller
             ])
         );
 
-        $msg = "Password per l'utente [{$user->name}] reimpostata con successo.";
+        $msg = __('permission-toolkit::messages.msg_user_password_reset', ['name' => $user->name]);
         if ($dateApplied) {
-            $msg .= " Campo [{$dateField}] aggiornato a [{$dateValue}].";
+            $msg .= __('permission-toolkit::messages.msg_user_password_field_updated', ['field' => $dateField, 'value' => $dateValue]);
         }
 
         return redirect()

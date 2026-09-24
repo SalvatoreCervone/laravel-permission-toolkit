@@ -1,26 +1,26 @@
 @extends('permission-toolkit::layouts.app')
 
-@section('title', 'Modifica Accesso Utente: ' . ($user->name ?? $user->email))
+@section('title', __('permission-toolkit::messages.user_edit_title', ['name' => $user->name ?? $user->email]))
 
 @section('content')
 <div style="max-width: 1000px; margin: 0 auto;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
         <div>
             <a href="{{ route('permission-toolkit.users.index') }}" style="color: #a5b4fc; text-decoration: none; font-size: 0.85rem;">
-                ← Torna alla lista utenti
+                {{ __('permission-toolkit::messages.user_edit_back') }}
             </a>
             <h1 style="font-size: 1.5rem; font-weight: 700; margin-top: 0.25rem;">
-                👤 Gestione Accessi: {{ $user->name ?? $user->email }}
+                {{ __('permission-toolkit::messages.user_edit_heading', ['name' => $user->name ?? $user->email]) }}
             </h1>
         </div>
         <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
             @if($passwordResetEnabled)
                 <button type="button" class="btn" onclick="openPasswordModal()" style="background: #4f46e5; border: 1px solid #6366f1;">
-                    🔑 Reset Password
+                    {{ __('permission-toolkit::messages.user_edit_btn_reset_pwd') }}
                 </button>
             @endif
             <a href="{{ route('permission-toolkit.simulator', ['user_id' => $user->id, 'ability' => '']) }}" class="btn" style="background: #1e1b4b; border: 1px solid #4338ca;">
-                🔍 Testa con il Simulatore
+                {{ __('permission-toolkit::messages.user_edit_btn_simulator') }}
             </a>
         </div>
     </div>
@@ -33,7 +33,7 @@
 
     @if($errors->any())
         <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid var(--danger); color: #fca5a5; padding: 1rem; border-radius: 0.375rem; margin-bottom: 1.5rem;">
-            <div style="font-weight: 600; margin-bottom: 0.5rem;">Si sono verificati dei problemi durante il salvataggio:</div>
+            <div style="font-weight: 600; margin-bottom: 0.5rem;">{{ __('permission-toolkit::messages.user_edit_errors_title') }}</div>
             <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem;">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -48,8 +48,8 @@
         <!-- Sezione 1: Ruoli Spatie -->
         <div class="card">
             <div class="card-header">
-                <h2 class="card-title">1. Ruoli Spatie</h2>
-                <span style="font-size: 0.8rem; color: var(--text-muted);">Seleziona i ruoli da assegnare a questo utente</span>
+                <h2 class="card-title">{{ __('permission-toolkit::messages.user_edit_sec1_title') }}</h2>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">{{ __('permission-toolkit::messages.user_edit_sec1_subtitle') }}</span>
             </div>
 
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem;">
@@ -65,11 +65,11 @@
                         >
                         <div>
                             <div style="font-weight: 600; font-size: 0.9rem;">{{ $role->name }}</div>
-                            <div style="font-size: 0.7rem; color: var(--text-muted);">{{ $role->guard_name }} • {{ $role->permissions->count() }} permessi</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">{{ $role->guard_name }} • {{ __('permission-toolkit::messages.user_edit_perms_count', ['count' => $role->permissions->count()]) }}</div>
                         </div>
                     </label>
                 @empty
-                    <div style="color: var(--text-muted); font-size: 0.85rem;">Nessun ruolo presente nel database.</div>
+                    <div style="color: var(--text-muted); font-size: 0.85rem;">{{ __('permission-toolkit::messages.user_edit_no_roles') }}</div>
                 @endforelse
             </div>
         </div>
@@ -78,9 +78,9 @@
         <div class="card">
             <div class="card-header">
                 <div>
-                    <h2 class="card-title">2. Permessi Diretti (Opzionali)</h2>
+                    <h2 class="card-title">{{ __('permission-toolkit::messages.user_edit_sec2_title') }}</h2>
                     <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">
-                        Permessi specifici assegnati direttamente all'utente (al di fuori di quelli ereditati dai ruoli).
+                        {{ __('permission-toolkit::messages.user_edit_sec2_subtitle') }}
                     </p>
                 </div>
             </div>
@@ -110,9 +110,9 @@
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-bottom: 2rem;">
-            <a href="{{ route('permission-toolkit.users.index') }}" class="btn" style="background: var(--border);">Annulla</a>
+            <a href="{{ route('permission-toolkit.users.index') }}" class="btn" style="background: var(--border);">{{ __('permission-toolkit::messages.btn_cancel') }}</a>
             <button type="submit" class="btn" style="padding: 0.75rem 2rem; font-size: 0.95rem;">
-                💾 Salva Ruoli & Permessi
+                {{ __('permission-toolkit::messages.user_edit_btn_save') }}
             </button>
         </div>
     </form>
@@ -126,10 +126,10 @@
         <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid #1f2937;">
             <div>
                 <h3 style="font-size: 1.15rem; font-weight: 700; color: #f9fafb; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
-                    🔑 Reimposta Password Utente
+                    {{ __('permission-toolkit::messages.user_pwd_modal_title') }}
                 </h3>
                 <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0.25rem 0 0 0;">
-                    Utente: <strong style="color: #a5b4fc;">{{ $user->name ?? $user->email }}</strong>
+                    {{ __('permission-toolkit::messages.user_pwd_modal_user', ['name' => $user->name ?? $user->email]) }}
                 </p>
             </div>
             <button type="button" onclick="closePasswordModal()" style="background: transparent; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0.25rem;">
@@ -145,7 +145,7 @@
                 <!-- Password Field -->
                 <div style="margin-bottom: 1.25rem;">
                     <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; color: #e5e7eb;">
-                        Nuova Password <span style="color: #ef4444;">*</span>
+                        {{ __('permission-toolkit::messages.user_pwd_new_label') }} <span style="color: #ef4444;">*</span>
                     </label>
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
                         <input 
@@ -155,7 +155,7 @@
                             class="input-control" 
                             required 
                             minlength="6"
-                            placeholder="Inserisci o genera una nuova password..." 
+                            placeholder="{{ __('permission-toolkit::messages.user_pwd_new_placeholder') }}" 
                             autocomplete="new-password"
                             oninput="checkPasswordMatch()"
                         >
@@ -166,7 +166,7 @@
 
                     <!-- Password Confirmation Field -->
                     <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.4rem; color: #e5e7eb;">
-                        Conferma Nuova Password <span style="color: #ef4444;">*</span>
+                        {{ __('permission-toolkit::messages.user_pwd_confirm_label') }} <span style="color: #ef4444;">*</span>
                     </label>
                     <div style="margin-bottom: 0.5rem;">
                         <input 
@@ -176,7 +176,7 @@
                             class="input-control" 
                             required 
                             minlength="6"
-                            placeholder="Ripeti la password..." 
+                            placeholder="{{ __('permission-toolkit::messages.user_pwd_confirm_placeholder') }}" 
                             autocomplete="new-password"
                             oninput="checkPasswordMatch()"
                         >
@@ -186,15 +186,15 @@
 
                     <div style="display: flex; gap: 0.5rem;">
                         <button type="button" class="btn btn-secondary" onclick="generateModalPassword()" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">
-                            🎲 Genera Casuale
+                            {{ __('permission-toolkit::messages.user_pwd_btn_generate') }}
                         </button>
                         <button type="button" class="btn btn-secondary" onclick="copyModalPassword()" id="modal_copy_btn" style="font-size: 0.8rem; padding: 0.35rem 0.75rem; display: none;">
-                            📋 Copia
+                            {{ __('permission-toolkit::messages.user_pwd_btn_copy') }}
                         </button>
                     </div>
 
                     <div id="modal_password_display" style="display: none; margin-top: 0.5rem; background: #0f172a; padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px dashed #6366f1; font-size: 0.8rem; word-break: break-all;">
-                        <span style="color: var(--text-muted);">Generata:</span> <strong id="modal_password_text" style="color: #a5b4fc; font-family: monospace;"></strong>
+                        <span style="color: var(--text-muted);">{{ __('permission-toolkit::messages.user_pwd_generated') }}</span> <strong id="modal_password_text" style="color: #a5b4fc; font-family: monospace;"></strong>
                     </div>
                 </div>
 
@@ -210,17 +210,17 @@
                             onchange="toggleDateSection(this.checked)"
                             style="accent-color: #6366f1; width: 1.05rem; height: 1.05rem;"
                         >
-                        <span>Aggiorna campo data (default: oggi)</span>
+                        <span>{{ __('permission-toolkit::messages.user_pwd_chk_update_date') }}</span>
                     </label>
 
                     <div style="font-size: 0.75rem; color: #9ca3af; margin-bottom: 0.75rem;">
-                        Campo configurato: <code style="color: #a5b4fc; background: rgba(0,0,0,0.3); padding: 0.15rem 0.35rem; border-radius: 0.25rem;">{{ $defaultDateField }}</code>
-                        <span style="color: var(--text-muted);">(configurato da config / .env)</span>
+                        {{ __('permission-toolkit::messages.user_pwd_configured_field') }} <code style="color: #a5b4fc; background: rgba(0,0,0,0.3); padding: 0.15rem 0.35rem; border-radius: 0.25rem;">{{ $defaultDateField }}</code>
+                        <span style="color: var(--text-muted);">{{ __('permission-toolkit::messages.user_pwd_from_config') }}</span>
                     </div>
 
                     <div id="date_input_container">
                         <label style="display: block; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.25rem;">
-                            Data e ora di reset:
+                            {{ __('permission-toolkit::messages.user_pwd_datetime_label') }}
                         </label>
                         <input 
                             type="datetime-local" 
@@ -233,20 +233,20 @@
 
                         <div style="display: flex; gap: 0.35rem; flex-wrap: wrap;">
                             <button type="button" class="btn btn-secondary" onclick="setModalDateToday()" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">
-                                ⚡ Oggi
+                                {{ __('permission-toolkit::messages.user_pwd_quick_today') }}
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="addModalDays(30)" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">
-                                +30 gg
+                                {{ __('permission-toolkit::messages.user_pwd_quick_30d') }}
                             </button>
                             <button type="button" class="btn btn-secondary" onclick="addModalDays(90)" style="font-size: 0.75rem; padding: 0.2rem 0.5rem;">
-                                +90 gg
+                                {{ __('permission-toolkit::messages.user_pwd_quick_90d') }}
                             </button>
                         </div>
                     </div>
 
                     @if(!empty($defaultDateField) && isset($user->{$defaultDateField}))
                         <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--text-muted); background: rgba(0,0,0,0.25); padding: 0.35rem 0.5rem; border-radius: 0.25rem;">
-                            Valore attuale nel DB: <strong style="color: #6ee7b7;">{{ $user->{$defaultDateField} }}</strong>
+                            {{ __('permission-toolkit::messages.user_pwd_current_db_val') }} <strong style="color: #6ee7b7;">{{ $user->{$defaultDateField} }}</strong>
                         </div>
                     @endif
                 </div>
@@ -254,9 +254,9 @@
 
             <!-- Modal Footer -->
             <div style="display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.5rem; background: #0f172a; border-top: 1px solid #1f2937;">
-                <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">Annulla</button>
+                <button type="button" class="btn btn-secondary" onclick="closePasswordModal()">{{ __('permission-toolkit::messages.btn_cancel') }}</button>
                 <button type="submit" class="btn" style="background: #4f46e5; border: 1px solid #6366f1;">
-                    🔒 Salva Nuova Password
+                    {{ __('permission-toolkit::messages.user_pwd_btn_save') }}
                 </button>
             </div>
         </form>
@@ -328,7 +328,7 @@
         checkPasswordMatch();
 
         if (typeof showToast === 'function') {
-            showToast('Password casuale generata e confermata!');
+            showToast("{{ __('permission-toolkit::messages.user_pwd_toast_generated') }}");
         }
     }
 
@@ -356,10 +356,10 @@
 
         feedback.style.display = 'block';
         if (input.value === confirmInput.value) {
-            feedback.textContent = '✓ Le password corrispondono';
+            feedback.textContent = "{{ __('permission-toolkit::messages.user_pwd_match') }}";
             feedback.style.color = '#6ee7b7';
         } else {
-            feedback.textContent = '✗ Le password non corrispondono';
+            feedback.textContent = "{{ __('permission-toolkit::messages.user_pwd_mismatch') }}";
             feedback.style.color = '#fca5a5';
         }
     }
@@ -369,7 +369,7 @@
         if (input.value) {
             navigator.clipboard.writeText(input.value).then(() => {
                 if (typeof showToast === 'function') {
-                    showToast('Password copiata negli appunti!');
+                    showToast("{{ __('permission-toolkit::messages.user_pwd_toast_copied') }}");
                 }
             });
         }

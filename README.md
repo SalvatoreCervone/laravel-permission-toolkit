@@ -38,6 +38,8 @@
   Scans your database for orphaned pivot records, empty roles, unused permissions, and Web vs API guard mismatches.
 - 💾 **JSON Export & Import (`permission:export` / `permission:import`)**  
   Effortlessly sync role-permission definitions between Local, Staging, and Production environments without manual DB dumps.
+- 🌍 **Bilingual Support (Italian 🇮🇹 & English 🇬🇧)**  
+  Built-in full localization with a 1-click language switcher in the web panel header, publishable translation files (`permission-toolkit-translations`), and `.env` / session support.
 - 🚀 **Interactive Local Demo (Orchestra Workbench)**  
   Pre-packaged demo with realistic seeders, demo users, roles, and audit trail ready to launch in 1 command.
 
@@ -75,11 +77,14 @@ http://127.0.0.1:8000/permission-manager
 composer require salvatorecervone/laravel-permission-toolkit
 ```
 
-### 2. Publish Configuration & (Optional) Audit Migration
+### 2. Publish Configuration, Translations & (Optional) Audit Migration
 
 ```bash
 # Publish configuration
 php artisan vendor:publish --tag="permission-toolkit-config"
+
+# (Optional) Publish translation language files (Italian & English)
+php artisan vendor:publish --tag="permission-toolkit-translations"
 
 # (Optional) Publish audit logs migration for security history
 php artisan vendor:publish --tag="permission-toolkit-migrations"

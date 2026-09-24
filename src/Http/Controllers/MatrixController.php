@@ -80,7 +80,11 @@ class MatrixController extends Controller
             'role' => $role->name,
             'permission' => $permission->name,
             'has_permission' => ! $hasPermission,
-            'message' => "Permission [{$permission->name}] {$action} for role [{$role->name}].",
+            'message' => __('permission-toolkit::messages.msg_perm_toggled', [
+                'permission' => $permission->name,
+                'action' => $action,
+                'role' => $role->name,
+            ]),
         ]);
     }
 }

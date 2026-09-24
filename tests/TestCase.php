@@ -35,6 +35,7 @@ abstract class TestCase extends Orchestra
         ]);
 
         $app['config']->set('cache.default', 'array');
+        $app['config']->set('session.driver', 'array');
         $app['config']->set('auth.providers.users.model', User::class);
         $app['config']->set('permission-toolkit.user_model', User::class);
     }

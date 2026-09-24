@@ -41,7 +41,7 @@ class RoleController extends Controller
         return response()->json([
             'success' => true,
             'role' => $role,
-            'message' => "Ruolo [{$role->name}] creato con successo!",
+            'message' => __('permission-toolkit::messages.msg_role_created', ['name' => $role->name]),
         ]);
     }
 
@@ -66,7 +66,7 @@ class RoleController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => "Ruolo [{$roleName}] eliminato.",
+            'message' => __('permission-toolkit::messages.msg_role_deleted', ['name' => $roleName]),
         ]);
     }
 }
