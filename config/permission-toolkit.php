@@ -16,6 +16,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Authorization Gate
+    |--------------------------------------------------------------------------
+    |
+    | The Gate ability used to authorize viewing the Permission Toolkit panel.
+    | By default in production, access is denied unless this gate is explicitly
+    | defined or PermissionToolkit::auth(Closure) is configured.
+    |
+    */
+    'gate' => env('PERMISSION_TOOLKIT_GATE', 'viewPermissionToolkit'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Localization / Language
     |--------------------------------------------------------------------------
     |

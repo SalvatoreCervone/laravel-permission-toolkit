@@ -58,27 +58,27 @@ class IntegrityChecker
     protected function checkUnusedPermissions(): array
     {
         $tableNames = config('permission.table_names');
-        $unused = [];
-
         $roleHasPerms = $tableNames['role_has_permissions'] ?? 'role_has_permissions';
         $modelHasPerms = $tableNames['model_has_permissions'] ?? 'model_has_permissions';
 
-        $permissions = Permission::all();
+        $ignorePermissions = (array) config('permission-toolkit.doctor.ignore_permissions', []);
 
-        foreach ($permissions as $permission) {
-            $assignedToRole = DB::table($roleHasPerms)->where('permission_id', $permission->id)->exists();
-            $assignedToModel = DB::table($modelHasPerms)->where('permission_id', $permission->id)->exists();
+        $usedPermIds = DB::table($roleHasPerms)->select('permission_id')
+            ->union(DB::table($modelHasPerms)->select('permission_id'));
 
-            if (! $assignedToRole && ! $assignedToModel) {
-                $unused[] = [
-                    'id' => $permission->id,
-                    'name' => $permission->name,
-                    'guard_name' => $permission->guard_name,
-                ];
-            }
+        $query = Permission::query()->whereNotIn('id', $usedPermIds);
+
+        if (! empty($ignorePermissions)) {
+            $query->whereNotIn('name', $ignorePermissions);
         }
 
-        return $unused;
+        return $query->get(['id', 'name', 'guard_name'])
+            ->map(fn ($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'guard_name' => $p->guard_name,
+            ])
+            ->toArray();
     }
 
     /**
@@ -87,27 +87,27 @@ class IntegrityChecker
     protected function checkEmptyRoles(): array
     {
         $tableNames = config('permission.table_names');
-        $empty = [];
-
         $roleHasPerms = $tableNames['role_has_permissions'] ?? 'role_has_permissions';
         $modelHasRoles = $tableNames['model_has_roles'] ?? 'model_has_roles';
 
-        $roles = Role::all();
+        $ignoreRoles = (array) config('permission-toolkit.doctor.ignore_roles', []);
 
-        foreach ($roles as $role) {
-            $hasPermissions = DB::table($roleHasPerms)->where('role_id', $role->id)->exists();
-            $hasUsers = DB::table($modelHasRoles)->where('role_id', $role->id)->exists();
+        $usedRoleIds = DB::table($roleHasPerms)->select('role_id')
+            ->union(DB::table($modelHasRoles)->select('role_id'));
 
-            if (! $hasPermissions && ! $hasUsers) {
-                $empty[] = [
-                    'id' => $role->id,
-                    'name' => $role->name,
-                    'guard_name' => $role->guard_name,
-                ];
-            }
+        $query = Role::query()->whereNotIn('id', $usedRoleIds);
+
+        if (! empty($ignoreRoles)) {
+            $query->whereNotIn('name', $ignoreRoles);
         }
 
-        return $empty;
+        return $query->get(['id', 'name', 'guard_name'])
+            ->map(fn ($r) => [
+                'id' => $r->id,
+                'name' => $r->name,
+                'guard_name' => $r->guard_name,
+            ])
+            ->toArray();
     }
 
     /**

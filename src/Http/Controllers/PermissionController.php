@@ -48,7 +48,7 @@ class PermissionController extends Controller
     /**
      * Remove the specified permission.
      */
-    public function destroy(int $id, PermissionRegistrar $registrar): JsonResponse
+    public function destroy(string|int $id, PermissionRegistrar $registrar): JsonResponse
     {
         $permission = Permission::findOrFail($id);
         $permName = $permission->name;

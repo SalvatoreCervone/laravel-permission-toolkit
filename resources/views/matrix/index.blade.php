@@ -138,8 +138,16 @@
                 {!! __('permission-toolkit::messages.matrix_quick_filter_tip') !!}
             </p>
         </div>
-        <div style="display: flex; gap: 0.75rem; align-items: center;">
-            <input type="text" id="permissionFilter" class="input-control" style="width: 240px;" placeholder="{{ __('permission-toolkit::messages.matrix_search_placeholder') }}">
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            @if(count($availableGuards) > 1)
+                <select onchange="window.location.href = '{{ route('permission-toolkit.matrix') }}?guard=' + encodeURIComponent(this.value)" class="input-control" style="width: auto; padding: 0.45rem 0.75rem; font-size: 0.85rem; border-color: #4f46e5;">
+                    @foreach($availableGuards as $g)
+                        <option value="{{ $g }}" {{ $selectedGuard === $g ? 'selected' : '' }}>Guard: {{ $g }}</option>
+                    @endforeach
+                    <option value="all" {{ $selectedGuard === 'all' ? 'selected' : '' }}>{{ __('permission-toolkit::messages.all_guards') }}</option>
+                </select>
+            @endif
+            <input type="text" id="permissionFilter" class="input-control" style="width: 220px;" placeholder="{{ __('permission-toolkit::messages.matrix_search_placeholder') }}">
             <button type="button" class="btn" onclick="openModal('modalRole')">
                 {{ __('permission-toolkit::messages.matrix_new_role_btn') }}
             </button>
@@ -562,7 +570,7 @@
                         showToast(data.message);
                     } else {
                         this.checked = !isChecked;
-                        showToast("{{ __('permission-toolkit::messages.update_error') }}", 'danger');
+                        showToast(data.message || "{{ __('permission-toolkit::messages.update_error') }}", 'danger');
                     }
                 })
                 .catch(err => {

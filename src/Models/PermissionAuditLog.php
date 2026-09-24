@@ -2,11 +2,15 @@
 
 namespace SalvatoreCervone\PermissionToolkit\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\MassPrunable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class PermissionAuditLog extends Model
 {
+    use MassPrunable;
+
     public $timestamps = false;
 
     protected $guarded = ['id'];
@@ -19,6 +23,16 @@ class PermissionAuditLog extends Model
     public function getTable()
     {
         return config('permission-toolkit.audit.table', 'permission_audit_logs');
+    }
+
+    /**
+     * Get the prunable model query.
+     */
+    public function prunable(): Builder
+    {
+        $days = (int) config('permission-toolkit.audit.retention_days', 90);
+
+        return static::where('created_at', '<=', now()->subDays($days));
     }
 
     /**

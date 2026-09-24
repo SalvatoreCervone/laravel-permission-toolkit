@@ -48,10 +48,29 @@ class RoleController extends Controller
     /**
      * Remove the specified role.
      */
-    public function destroy(int $id, PermissionRegistrar $registrar): JsonResponse
+    public function destroy(string|int $id, PermissionRegistrar $registrar): JsonResponse
     {
         $role = Role::findOrFail($id);
         $roleName = $role->name;
+
+        // Guardrail: Protect configured Super Admin roles from accidental deletion
+        $superAdminConfig = config('permission-toolkit.super_admin', []);
+        $superAdminRoles = (array) ($superAdminConfig['role_name'] ?? ['super-admin', 'Super Admin']);
+
+        if (in_array($roleName, $superAdminRoles, true)) {
+            return response()->json([
+                'success' => false,
+                'message' => __('permission-toolkit::messages.cannot_delete_super_admin_role'),
+            ], 403);
+        }
+
+        // Guardrail: Prevent currently authenticated user from deleting a role they belong to
+        if (auth()->check() && method_exists(auth()->user(), 'hasRole') && auth()->user()->hasRole($roleName)) {
+            return response()->json([
+                'success' => false,
+                'message' => __('permission-toolkit::messages.cannot_delete_own_role'),
+            ], 403);
+        }
 
         AuditLogger::log(
             targetUser: $role,

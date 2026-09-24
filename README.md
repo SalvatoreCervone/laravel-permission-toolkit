@@ -93,19 +93,48 @@ php artisan migrate
 
 ---
 
+## 🔐 Security & Access Control (Production-Ready)
+
+By default in **local** and **testing** environments, any authenticated user can view the toolkit. In **production**, access is strictly forbidden unless authorized via a Gate or custom callback (matching Laravel Horizon/Telescope conventions):
+
+### Option A: Define the Gate in `AuthServiceProvider`
+```php
+use Illuminate\Support\Facades\Gate;
+
+Gate::define('viewPermissionToolkit', function ($user) {
+    return $user->hasRole('super-admin');
+});
+```
+
+### Option B: Use the `PermissionToolkit::auth` Callback
+```php
+use SalvatoreCervone\PermissionToolkit\PermissionToolkit;
+
+PermissionToolkit::auth(function ($request) {
+    return $request->user()?->can('manage-permissions');
+});
+```
+
+### 🛡️ Built-in Guardrails:
+- **Super Admin Protection**: Deleting roles configured as `super_admin` (`super-admin` / `Super Admin`) is strictly prohibited and returns `403 Forbidden`.
+- **Self-Lockout Prevention**: Authenticated users cannot delete a role they are currently assigned to.
+- **Multi-Guard Mismatch Guard**: Toggling permissions with mismatched guards (`web` vs `api`) is validated before Spatie throws an exception.
+
+---
+
 ## 🌐 Web Panel Navigation
 
-Protected by your standard `['web', 'auth']` middleware by default (configurable in `config/permission-toolkit.php`):
+Protected by `['web', 'auth', Authorize::class]` middleware:
 
 ```text
 https://your-app.test/permission-manager
 ```
 
-- **Matrice Ruoli**: `/permission-manager/matrix` (toggle asincrono + creazione rapida di ruoli e permessi)
-- **Gestione Utenti**: `/permission-manager/users` (elenco utenti e form assegnazione ruoli/permessi)
-- **Diagnostic Simulator**: `/permission-manager/simulator` (test interattivo di autorizzazione)
-- **Audit Trail**: `/permission-manager/audit-logs` (registro di sicurezza)
-- **Integrity Doctor**: `/permission-manager/doctor` (diagnostica database)
+- **Matrice Ruoli**: `/permission-manager/matrix` (toggle asincrono con selettore Multi-Guard e ricerca)
+- **Gestione Utenti**: `/permission-manager/users` (supporto per ID numerici, UUID e ULID)
+- **Diagnostic Simulator**: `/permission-manager/simulator` (test interattivo con supporto per Gate globali e Policy)
+- **Audit Trail**: `/permission-manager/audit-logs` (registro di sicurezza transazionale)
+- **Integrity Doctor**: `/permission-manager/doctor` (diagnostica senza N+1 query)
 
 ---
 
@@ -116,8 +145,12 @@ https://your-app.test/permission-manager
 php artisan permission:simulate 42 "invoices.create"
 php artisan permission:simulate mario@demo.test "update" --model="App\Models\Invoice" --id=15
 
-# Database Health Check
+# Database Health Check (Optimized set-based queries)
 php artisan permission:doctor
+
+# Audit Trail Pruning (Respects retention_days config)
+php artisan permission:audit-prune
+php artisan permission:audit-prune --days=30
 
 # Sync across environments
 php artisan permission:export --file=permissions.json

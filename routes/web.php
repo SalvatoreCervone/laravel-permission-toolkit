@@ -9,6 +9,7 @@ use SalvatoreCervone\PermissionToolkit\Http\Controllers\PermissionController;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\RoleController;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\SimulatorController;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\UserController;
+use SalvatoreCervone\PermissionToolkit\Http\Middleware\Authorize;
 use SalvatoreCervone\PermissionToolkit\Http\Middleware\SetLocale;
 
 $prefix = config('permission-toolkit.prefix', 'permission-manager');
@@ -16,6 +17,10 @@ $middleware = config('permission-toolkit.middleware', ['web', 'auth']);
 
 if (! in_array(SetLocale::class, $middleware)) {
     $middleware[] = SetLocale::class;
+}
+
+if (! in_array(Authorize::class, $middleware)) {
+    $middleware[] = Authorize::class;
 }
 
 Route::group(['prefix' => $prefix, 'middleware' => $middleware, 'as' => 'permission-toolkit.'], function () {

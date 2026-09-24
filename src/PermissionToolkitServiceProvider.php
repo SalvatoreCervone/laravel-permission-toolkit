@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use SalvatoreCervone\PermissionToolkit\Commands\DoctorPermissionCommand;
 use SalvatoreCervone\PermissionToolkit\Commands\ExportPermissionsCommand;
 use SalvatoreCervone\PermissionToolkit\Commands\ImportPermissionsCommand;
+use SalvatoreCervone\PermissionToolkit\Commands\PruneAuditLogsCommand;
 use SalvatoreCervone\PermissionToolkit\Commands\SimulatePermissionCommand;
 use SalvatoreCervone\PermissionToolkit\Services\AuthorizationSimulator;
 use SalvatoreCervone\PermissionToolkit\Services\IntegrityChecker;
@@ -70,6 +71,7 @@ class PermissionToolkitServiceProvider extends ServiceProvider
                 DoctorPermissionCommand::class,
                 ExportPermissionsCommand::class,
                 ImportPermissionsCommand::class,
+                PruneAuditLogsCommand::class,
             ]);
         }
     }

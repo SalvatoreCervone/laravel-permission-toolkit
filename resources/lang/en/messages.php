@@ -225,4 +225,14 @@ return [
     'msg_user_password_reset' => 'Password for user [:name] reset successfully.',
     'msg_user_password_field_updated' => ' Field [:field] updated to [:value].',
     'msg_pwd_reset_disabled' => 'Password reset feature is disabled by configuration.',
+
+    // Security & Guard messages
+    'unauthorized_access' => 'Unauthorized access to the permission management panel.',
+    'cannot_delete_super_admin_role' => 'Action blocked: deleting the Super Admin role is strictly forbidden.',
+    'cannot_delete_own_role' => 'Action blocked: you cannot delete a role currently assigned to your own user.',
+    'guard_mismatch_error' => 'Guard mismatch: Role [:role] belongs to guard [:role_guard], while Permission [:permission] belongs to guard [:perm_guard]. Spatie does not allow cross-guard assignments.',
+    'filter_guard' => 'Guard',
+    'all_guards' => 'All Guards',
+    'sim_step_detail_gate_pass' => 'Native Laravel Gate for [:ability] evaluated successfully: ALLOWED.',
+    'sim_reason_gate_allowed' => 'Explicitly granted by native Laravel Gate for ability [:ability].',
 ];

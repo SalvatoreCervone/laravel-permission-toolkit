@@ -225,4 +225,14 @@ return [
     'msg_user_password_reset' => 'Password per l\'utente [:name] reimpostata con successo.',
     'msg_user_password_field_updated' => ' Campo [:field] aggiornato a [:value].',
     'msg_pwd_reset_disabled' => 'La funzionalità di reset password è disabilitata da configurazione.',
+
+    // Security & Guard messages
+    'unauthorized_access' => 'Accesso non autorizzato al pannello di gestione permessi.',
+    'cannot_delete_super_admin_role' => 'Operazione bloccata: non è consentito eliminare il ruolo Super Admin.',
+    'cannot_delete_own_role' => 'Operazione bloccata: non puoi eliminare un ruolo attualmente assegnato al tuo utente.',
+    'guard_mismatch_error' => 'Discrepanza di Guard: Il ruolo [:role] appartiene al guard [:role_guard], mentre il permesso [:permission] appartiene al guard [:perm_guard]. Spatie non consente l\'associazione cross-guard.',
+    'filter_guard' => 'Guardia',
+    'all_guards' => 'Tutte le Guardie',
+    'sim_step_detail_gate_pass' => 'Gate nativo di Laravel per [:ability] valutato con successo: ACCORDATO.',
+    'sim_reason_gate_allowed' => 'Autorizzato esplicitamente dal Gate nativo di Laravel per l\'abilità [:ability].',
 ];

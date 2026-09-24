@@ -179,6 +179,35 @@ class AuthorizationSimulator
                     'message' => $gateResponse->message() ?: __('permission-toolkit::messages.sim_policy_refusal'),
                 ]);
             }
+        } elseif (Gate::has($ability)) {
+            $gateResponse = Gate::forUser($user)->inspect($ability);
+
+            if ($gateResponse->allowed()) {
+                $steps[] = [
+                    'step' => 'Policy / Gate Evaluation',
+                    'status' => 'PASS',
+                    'detail' => __('permission-toolkit::messages.sim_step_detail_gate_pass', [
+                        'ability' => $ability,
+                    ]),
+                ];
+                $isAllowed = true;
+                $decisionReason = __('permission-toolkit::messages.sim_reason_gate_allowed', [
+                    'ability' => $ability,
+                ]);
+            } else {
+                $policyMsg = $gateResponse->message() ?: __('permission-toolkit::messages.sim_policy_forbidden');
+                $steps[] = [
+                    'step' => 'Policy / Gate Evaluation',
+                    'status' => 'FAIL',
+                    'detail' => __('permission-toolkit::messages.sim_step_detail_policy_fail', [
+                        'message' => $policyMsg,
+                    ]),
+                ];
+                $isAllowed = false;
+                $decisionReason = __('permission-toolkit::messages.sim_reason_policy_denied', [
+                    'message' => $gateResponse->message() ?: __('permission-toolkit::messages.sim_policy_refusal'),
+                ]);
+            }
         } else {
             $steps[] = [
                 'step' => 'Policy / Gate Evaluation',
