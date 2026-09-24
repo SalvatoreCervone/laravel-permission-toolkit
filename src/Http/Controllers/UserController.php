@@ -84,7 +84,7 @@ class UserController extends Controller
         $userRoleIds = $user->roles->pluck('id')->toArray();
         $userPermissionIds = $user->permissions->pluck('id')->toArray();
 
-        $defaultDateField = config('permission-toolkit.password_reset.date_field', 'password_reset');
+        $defaultDateField = config('permission-toolkit.password_reset.date_field', null);
         $passwordResetEnabled = config('permission-toolkit.password_reset.enabled', true);
 
         return view('permission-toolkit::users.edit', compact(
@@ -173,10 +173,10 @@ class UserController extends Controller
 
         $user = (new $userModelClass)->newQuery()->findOrFail($id);
 
-        $dateField = config('permission-toolkit.password_reset.date_field', 'password_reset');
-        $shouldUpdateDate = $request->has('update_date')
+        $dateField = config('permission-toolkit.password_reset.date_field', null);
+        $shouldUpdateDate = $dateField && ($request->has('update_date')
             ? $request->boolean('update_date')
-            : $request->filled('date_value');
+            : $request->filled('date_value'));
 
         $dateValue = $shouldUpdateDate ? ($request->input('date_value') ?: now()->startOfDay()->toDateTimeString()) : null;
         $dateApplied = false;

@@ -40,7 +40,7 @@
                         <td style="color: var(--text-muted); font-size: 0.85rem;">{{ $user->email ?? 'N/D' }}</td>
                         <td>
                             @forelse($user->roles as $role)
-                                <span class="badge badge-info" style="margin-right: 0.25rem;">{{ $role->name }}</span>
+                                <span class="badge badge-info" style="margin-right: 0.25rem; margin-bottom: 0.25rem; display: inline-block; word-break: break-word; overflow-wrap: anywhere; white-space: normal; line-height: 1.25;">{{ $role->name }}</span>
                             @empty
                                 <span style="color: var(--text-muted); font-size: 0.8rem;">{{ __('permission-toolkit::messages.users_no_roles') }}</span>
                             @endforelse

@@ -14,14 +14,15 @@ class PruneAuditLogsCommand extends Command
 
     public function handle(): int
     {
-        $days = (int) ($this->option('days') ?: config('permission-toolkit.audit.retention_days', 90));
+        $optionDays = $this->option('days');
+        $days = $optionDays !== null ? (int) $optionDays : config('permission-toolkit.audit.retention_days', 90);
 
-        if ($days <= 0) {
-            $this->error('Retention days must be a positive integer.');
-            return Command::FAILURE;
+        if ($days === null || (int) $days <= 0) {
+            $this->info('Audit log retention is set to indefinite (retention_days is null or 0). No records were pruned.');
+            return Command::SUCCESS;
         }
 
-        $cutoff = now()->subDays($days);
+        $cutoff = now()->subDays((int) $days);
         $count = PermissionAuditLog::where('created_at', '<=', $cutoff)->delete();
 
         $this->info("✔ Pruned {$count} audit log record(s) older than {$days} days (before {$cutoff->toDateTimeString()}).");

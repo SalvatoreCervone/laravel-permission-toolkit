@@ -52,20 +52,20 @@
                 <span style="font-size: 0.8rem; color: var(--text-muted);">{{ __('permission-toolkit::messages.user_edit_sec1_subtitle') }}</span>
             </div>
 
-            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1rem;">
                 @forelse($roles as $role)
                     @php $isAssigned = in_array($role->id, $userRoleIds); @endphp
-                    <label style="display: flex; align-items: center; gap: 0.75rem; background: #171f2e; border: 1px solid {{ $isAssigned ? 'var(--primary)' : 'var(--border)' }}; padding: 0.75rem 1rem; border-radius: 0.375rem; cursor: pointer;">
+                    <label style="display: flex; align-items: center; gap: 0.75rem; background: #171f2e; border: 1px solid {{ $isAssigned ? 'var(--primary)' : 'var(--border)' }}; padding: 0.75rem 1rem; border-radius: 0.375rem; cursor: pointer; min-width: 0; overflow: hidden;">
                         <input 
                             type="checkbox" 
                             name="roles[]" 
                             value="{{ $role->id }}" 
                             {{ $isAssigned ? 'checked' : '' }}
-                            style="width: 1.15rem; height: 1.15rem; accent-color: var(--primary);"
+                            style="width: 1.15rem; height: 1.15rem; accent-color: var(--primary); flex-shrink: 0;"
                         >
-                        <div>
-                            <div style="font-weight: 600; font-size: 0.9rem;">{{ $role->name }}</div>
-                            <div style="font-size: 0.7rem; color: var(--text-muted);">{{ $role->guard_name }} • {{ __('permission-toolkit::messages.user_edit_perms_count', ['count' => $role->permissions->count()]) }}</div>
+                        <div style="min-width: 0; flex: 1;">
+                            <div style="font-weight: 600; font-size: 0.9rem; word-break: break-word; overflow-wrap: anywhere; line-height: 1.3;" title="{{ $role->name }}">{{ $role->name }}</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.2rem;">{{ $role->guard_name }} • {{ __('permission-toolkit::messages.user_edit_perms_count', ['count' => $role->permissions->count()]) }}</div>
                         </div>
                     </label>
                 @empty
@@ -90,18 +90,18 @@
                     <div style="font-weight: 700; color: #a5b4fc; text-transform: uppercase; font-size: 0.75rem; margin-bottom: 0.5rem; letter-spacing: 0.05em;">
                         📂 {{ $group }} ({{ count($perms) }})
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.5rem;">
                         @foreach($perms as $permission)
                             @php $isDirect = in_array($permission->id, $userPermissionIds); @endphp
-                            <label style="display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 0.5rem 0.75rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.85rem;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 0.5rem 0.75rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.85rem; min-width: 0; overflow: hidden;">
                                 <input 
                                     type="checkbox" 
                                     name="permissions[]" 
                                     value="{{ $permission->id }}" 
                                     {{ $isDirect ? 'checked' : '' }}
-                                    style="accent-color: var(--primary);"
+                                    style="accent-color: var(--primary); flex-shrink: 0;"
                                 >
-                                <span style="font-family: monospace;">{{ $permission->name }}</span>
+                                <span style="font-family: monospace; min-width: 0; flex: 1; word-break: break-word; overflow-wrap: anywhere; line-height: 1.3;" title="{{ $permission->name }}">{{ $permission->name }}</span>
                             </label>
                         @endforeach
                     </div>
@@ -198,6 +198,7 @@
                     </div>
                 </div>
 
+                @if(!empty($defaultDateField))
                 <!-- Date Option Section -->
                 <div style="background: #171f2e; padding: 1.15rem; border-radius: 0.5rem; border: 1px solid var(--border);">
                     <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.85rem; cursor: pointer; color: #f3f4f6; margin-bottom: 0.5rem;">
@@ -250,6 +251,7 @@
                         </div>
                     @endif
                 </div>
+                @endif
             </div>
 
             <!-- Modal Footer -->

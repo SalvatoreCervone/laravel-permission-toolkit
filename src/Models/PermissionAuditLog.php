@@ -30,9 +30,14 @@ class PermissionAuditLog extends Model
      */
     public function prunable(): Builder
     {
-        $days = (int) config('permission-toolkit.audit.retention_days', 90);
+        $days = config('permission-toolkit.audit.retention_days', 90);
 
-        return static::where('created_at', '<=', now()->subDays($days));
+        if ($days === null || (int) $days <= 0) {
+            // Indefinite retention: never prune any records
+            return static::whereRaw('1 = 0');
+        }
+
+        return static::where('created_at', '<=', now()->subDays((int) $days));
     }
 
     /**

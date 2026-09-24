@@ -72,4 +72,34 @@ class PruneAuditLogsTest extends TestCase
 
         $this->assertEquals(0, PermissionAuditLog::count());
     }
+
+    /** @test */
+    public function it_does_not_prune_when_retention_days_is_null_or_zero()
+    {
+        config(['permission-toolkit.audit.retention_days' => null]);
+
+        $user = User::create(['name' => 'Actor', 'email' => 'actor3@test.com']);
+
+        PermissionAuditLog::create([
+            'user_type' => get_class($user),
+            'user_id' => $user->id,
+            'causer_type' => get_class($user),
+            'causer_id' => $user->id,
+            'action' => 'assigned',
+            'type' => 'role',
+            'target_name' => 'ancient-log',
+            'created_at' => Carbon::now()->subYears(2),
+        ]);
+
+        $this->artisan('permission:audit-prune')
+            ->expectsOutputToContain('indefinite')
+            ->assertSuccessful();
+
+        // Must still exist
+        $this->assertEquals(1, PermissionAuditLog::count());
+
+        // Model::prunable query must return 0 results
+        $log = new PermissionAuditLog();
+        $this->assertEquals(0, $log->prunable()->count());
+    }
 }

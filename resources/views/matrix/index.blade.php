@@ -182,7 +182,7 @@
                             <span class="badge badge-info role-filter-btn" 
                                   onclick="filterByRole({{ $role->id }}, '{{ addslashes($role->name) }}')"
                                   title="{{ __('permission-toolkit::messages.matrix_role_filter_tooltip') }}"
-                                  style="font-size: 0.7rem; white-space: nowrap;">
+                                  style="font-size: 0.7rem; max-width: 110px; word-break: break-word; overflow-wrap: anywhere; line-height: 1.25; display: inline-block; white-space: normal;">
                                 {{ $role->name }}
                             </span>
                             <button type="button" onclick="event.stopPropagation(); deleteRole({{ $role->id }}, '{{ addslashes($role->name) }}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.75rem;" title="{{ __('permission-toolkit::messages.matrix_delete_role_title') }}">✕</button>

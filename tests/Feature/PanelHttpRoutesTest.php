@@ -100,6 +100,8 @@ class PanelHttpRoutesTest extends TestCase
     /** @test */
     public function it_can_reset_password_and_update_configured_date_field()
     {
+        config(['permission-toolkit.password_reset.date_field' => 'password_reset']);
+
         $dateValue = '2026-10-15T10:30';
 
         $response = $this->actingAs($this->user)->post("/permission-manager/users/{$this->user->id}/password", [

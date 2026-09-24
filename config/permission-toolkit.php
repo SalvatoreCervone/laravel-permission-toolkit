@@ -72,26 +72,30 @@ return [
     | Allows admins to reset user passwords from the panel and optionally
     | set a timestamp / date column on the user model (e.g. 'password_reset',
     | 'password_expires_at', 'expires_at', etc.).
+    | Defaults to null (no date column will be modified unless configured).
     |
     */
     'password_reset' => [
-        'enabled' => true,
-        'date_field' => env('PERMISSION_TOOLKIT_PASSWORD_DATE_FIELD', 'password_reset'),
+        'enabled' => env('PERMISSION_TOOLKIT_PASSWORD_RESET_ENABLED', true),
+        'date_field' => env('PERMISSION_TOOLKIT_PASSWORD_DATE_FIELD', null),
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Audit Trail
+    | Audit Trail & Retention Policy
     |--------------------------------------------------------------------------
     |
     | Automatically records every role/permission assignment and revocation,
     | tracking actor, target user, IP address, and timestamp.
     |
+    | 'retention_days': Number of days to keep logs before pruning.
+    | Set to `null` or `0` if you NEVER want logs to be deleted (indefinite retention).
+    |
     */
     'audit' => [
         'enabled' => env('PERMISSION_TOOLKIT_AUDIT_ENABLED', true),
         'table' => 'permission_audit_logs',
-        'retention_days' => 90,
+        'retention_days' => env('PERMISSION_TOOLKIT_AUDIT_RETENTION_DAYS', 90),
     ],
 
     /*
