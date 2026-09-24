@@ -23,12 +23,16 @@ class AuthorizationSimulator
         // Step 1: User Identity Verification
         $userClass = get_class($user);
         $userId = $user->getAuthIdentifier();
-        $userName = $user->name ?? $user->email ?? "User #{$userId}";
+        $userName = $user->name ?? $user->email ?? __('permission-toolkit::messages.sim_anonymous_user', ['id' => $userId]);
 
         $steps[] = [
             'step' => 'User Identity',
             'status' => 'PASS',
-            'detail' => "Authenticated target: [{$userClass}] ID: {$userId} ({$userName})",
+            'detail' => __('permission-toolkit::messages.sim_step_detail_identity', [
+                'class' => $userClass,
+                'id' => $userId,
+                'name' => $userName,
+            ]),
         ];
 
         // Step 2: Super Admin Check
@@ -45,10 +49,14 @@ class AuthorizationSimulator
                 $steps[] = [
                     'step' => 'Super Admin Bypass',
                     'status' => 'PASS',
-                    'detail' => "User possesses the bypass role '{$matchingRole}'. Unrestricted access granted.",
+                    'detail' => __('permission-toolkit::messages.sim_step_detail_super_admin_pass', [
+                        'role' => $matchingRole,
+                    ]),
                 ];
                 $isAllowed = true;
-                $decisionReason = "Bypassed via Super Admin role ({$matchingRole})";
+                $decisionReason = __('permission-toolkit::messages.sim_reason_super_admin', [
+                    'role' => $matchingRole,
+                ]);
 
                 return $this->formatResult(true, $decisionReason, $steps, $user, $ability, $target);
             } else {
@@ -56,14 +64,16 @@ class AuthorizationSimulator
                 $steps[] = [
                     'step' => 'Super Admin Bypass',
                     'status' => 'SKIP',
-                    'detail' => "User does not hold the bypass role [{$rolesRequiredStr}]. Proceeding to fine-grained checks.",
+                    'detail' => __('permission-toolkit::messages.sim_step_detail_super_admin_skip', [
+                        'roles' => $rolesRequiredStr,
+                    ]),
                 ];
             }
         } else {
             $steps[] = [
                 'step' => 'Super Admin Bypass',
                 'status' => 'SKIP',
-                'detail' => "Super Admin bypass is disabled in configuration.",
+                'detail' => __('permission-toolkit::messages.sim_step_detail_super_admin_disabled'),
             ];
         }
 
@@ -81,15 +91,19 @@ class AuthorizationSimulator
             $steps[] = [
                 'step' => 'Direct Permission',
                 'status' => 'PASS',
-                'detail' => "Ability '{$ability}' is directly assigned to the user record.",
+                'detail' => __('permission-toolkit::messages.sim_step_detail_direct_pass', [
+                    'ability' => $ability,
+                ]),
             ];
             $isAllowed = true;
-            $decisionReason = "Allowed via Direct Permission assignment";
+            $decisionReason = __('permission-toolkit::messages.sim_reason_direct_permission');
         } else {
             $steps[] = [
                 'step' => 'Direct Permission',
                 'status' => 'FAIL',
-                'detail' => "Ability '{$ability}' is not directly assigned to this user.",
+                'detail' => __('permission-toolkit::messages.sim_step_detail_direct_fail', [
+                    'ability' => $ability,
+                ]),
             ];
         }
 
@@ -110,18 +124,26 @@ class AuthorizationSimulator
             $steps[] = [
                 'step' => 'Role Permission Inheritance',
                 'status' => 'PASS',
-                'detail' => "Ability '{$ability}' is granted via active role(s): [{$rolesList}].",
+                'detail' => __('permission-toolkit::messages.sim_step_detail_role_pass', [
+                    'ability' => $ability,
+                    'roles' => $rolesList,
+                ]),
             ];
             if (! $isAllowed) {
                 $isAllowed = true;
-                $decisionReason = "Allowed via Role inheritance [{$rolesList}]";
+                $decisionReason = __('permission-toolkit::messages.sim_reason_role_inheritance', [
+                    'roles' => $rolesList,
+                ]);
             }
         } else {
-            $currentRoles = empty($userRoles) ? 'None' : implode(', ', $userRoles);
+            $currentRoles = empty($userRoles) ? __('permission-toolkit::messages.sim_none') : implode(', ', $userRoles);
             $steps[] = [
                 'step' => 'Role Permission Inheritance',
                 'status' => 'FAIL',
-                'detail' => "None of the user's assigned roles ({$currentRoles}) contain the permission '{$ability}'.",
+                'detail' => __('permission-toolkit::messages.sim_step_detail_role_fail', [
+                    'roles' => $currentRoles,
+                    'ability' => $ability,
+                ]),
             ];
         }
 
@@ -134,29 +156,41 @@ class AuthorizationSimulator
                 $steps[] = [
                     'step' => 'Policy / Gate Evaluation',
                     'status' => 'PASS',
-                    'detail' => "Gate::forUser()->inspect('{$ability}', {$targetDesc}) evaluated to ALLOWED.",
+                    'detail' => __('permission-toolkit::messages.sim_step_detail_policy_pass', [
+                        'ability' => $ability,
+                        'target' => $targetDesc,
+                    ]),
                 ];
                 $isAllowed = true;
-                $decisionReason = "Allowed by Laravel Policy/Gate condition for {$targetDesc}";
+                $decisionReason = __('permission-toolkit::messages.sim_reason_policy_allowed', [
+                    'target' => $targetDesc,
+                ]);
             } else {
+                $policyMsg = $gateResponse->message() ?: __('permission-toolkit::messages.sim_policy_forbidden');
                 $steps[] = [
                     'step' => 'Policy / Gate Evaluation',
                     'status' => 'FAIL',
-                    'detail' => "Gate evaluated to DENIED. Message: " . ($gateResponse->message() ?: 'Forbidden by policy'),
+                    'detail' => __('permission-toolkit::messages.sim_step_detail_policy_fail', [
+                        'message' => $policyMsg,
+                    ]),
                 ];
                 $isAllowed = false;
-                $decisionReason = "Denied by Laravel Policy: " . ($gateResponse->message() ?: 'Explicit policy refusal');
+                $decisionReason = __('permission-toolkit::messages.sim_reason_policy_denied', [
+                    'message' => $gateResponse->message() ?: __('permission-toolkit::messages.sim_policy_refusal'),
+                ]);
             }
         } else {
             $steps[] = [
                 'step' => 'Policy / Gate Evaluation',
                 'status' => 'SKIP',
-                'detail' => "No specific model/resource instance was supplied. Evaluated purely at RBAC level.",
+                'detail' => __('permission-toolkit::messages.sim_step_detail_policy_skip'),
             ];
         }
 
         if (! $isAllowed && empty($decisionReason)) {
-            $decisionReason = "No matching direct permission, role permission, or policy grant found for '{$ability}'";
+            $decisionReason = __('permission-toolkit::messages.sim_reason_no_grant', [
+                'ability' => $ability,
+            ]);
         }
 
         return $this->formatResult($isAllowed, $decisionReason, $steps, $user, $ability, $target);

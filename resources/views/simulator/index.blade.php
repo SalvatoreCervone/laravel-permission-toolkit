@@ -84,7 +84,7 @@
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <div>
                         <span class="badge {{ $simulationResult['is_allowed'] ? 'badge-success' : 'badge-danger' }}" style="font-size: 0.9rem; padding: 0.35rem 0.75rem;">
-                            {{ $simulationResult['verdict'] }}
+                            {{ __('permission-toolkit::messages.sim_verdict_' . strtolower($simulationResult['verdict'])) }}
                         </span>
                         <div style="font-size: 1.1rem; font-weight: 600; margin-top: 0.5rem;">
                             {{ $simulationResult['reason'] }}

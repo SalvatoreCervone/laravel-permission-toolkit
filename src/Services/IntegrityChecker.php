@@ -44,7 +44,7 @@ class IntegrityChecker
             if ($invalidRolePerms > 0) {
                 $orphans[] = [
                     'table' => $tableNames['role_has_permissions'],
-                    'issue' => "{$invalidRolePerms} pivot record(s) point to non-existent permissions",
+                    'issue' => __('permission-toolkit::messages.doctor_issue_orphaned', ['count' => $invalidRolePerms]),
                 ];
             }
         }
@@ -138,7 +138,7 @@ class IntegrityChecker
             $mismatches[] = [
                 'role' => "{$record->role_name} ({$record->role_guard})",
                 'permission' => "{$record->permission_name} ({$record->permission_guard})",
-                'issue' => "Guard mismatch between role and permission",
+                'issue' => __('permission-toolkit::messages.doctor_issue_guard_mismatch'),
             ];
         }
 
@@ -169,9 +169,9 @@ class IntegrityChecker
 
         if (count($styles) > 1) {
             return [
-                'warning' => 'Mixed permission naming styles detected in database',
+                'warning' => __('permission-toolkit::messages.doctor_warning_naming'),
                 'detected_styles' => array_keys($styles),
-                'recommendation' => 'Standardize on a single convention (e.g. dot notation like resource.action)',
+                'recommendation' => __('permission-toolkit::messages.doctor_rec_naming'),
             ];
         }
 

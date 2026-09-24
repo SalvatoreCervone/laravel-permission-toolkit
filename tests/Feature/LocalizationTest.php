@@ -125,6 +125,40 @@ class LocalizationTest extends TestCase
     }
 
     /** @test */
+    public function it_translates_simulation_results_and_reasons_in_both_languages()
+    {
+        // Give direct permission to user
+        $perm = \Spatie\Permission\Models\Permission::create(['name' => 'invoices.create']);
+        $this->user->givePermissionTo($perm);
+
+        // Run simulation in Italian
+        $itSim = $this->actingAs($this->user)
+            ->withSession(['permission_toolkit_locale' => 'it'])
+            ->get("/permission-manager/simulator?user_id={$this->user->id}&ability=invoices.create");
+
+        $itSim->assertStatus(200);
+        $itSim->assertSee('AUTORIZZATO');
+        $itSim->assertSee('Consentito tramite assegnazione diretta del permesso');
+        $itSim->assertSee('Identità Utente');
+        $itSim->assertSee('Target autenticato:');
+        $itSim->assertSee('Permesso Diretto');
+        $itSim->assertSee('è assegnata direttamente al record utente');
+
+        // Run simulation in English
+        $enSim = $this->actingAs($this->user)
+            ->withSession(['permission_toolkit_locale' => 'en'])
+            ->get("/permission-manager/simulator?user_id={$this->user->id}&ability=invoices.create");
+
+        $enSim->assertStatus(200);
+        $enSim->assertSee('ALLOWED');
+        $enSim->assertSee('Allowed via Direct Permission assignment');
+        $enSim->assertSee('User Identity');
+        $enSim->assertSee('Authenticated target:');
+        $enSim->assertSee('Direct Permission');
+        $enSim->assertSee('is directly assigned to the user record');
+    }
+
+    /** @test */
     public function it_translates_doctor_page_in_both_languages()
     {
         // Italian
