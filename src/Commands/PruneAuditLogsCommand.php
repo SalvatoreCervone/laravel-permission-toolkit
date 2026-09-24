@@ -3,6 +3,7 @@
 namespace SalvatoreCervone\PermissionToolkit\Commands;
 
 use Illuminate\Console\Command;
+use SalvatoreCervone\PermissionToolkit\Events\AuditLogsPruned;
 use SalvatoreCervone\PermissionToolkit\Models\PermissionAuditLog;
 
 class PruneAuditLogsCommand extends Command
@@ -24,6 +25,8 @@ class PruneAuditLogsCommand extends Command
 
         $cutoff = now()->subDays((int) $days);
         $count = PermissionAuditLog::where('created_at', '<=', $cutoff)->delete();
+
+        event(new AuditLogsPruned($count, (int) $days));
 
         $this->info("✔ Pruned {$count} audit log record(s) older than {$days} days (before {$cutoff->toDateTimeString()}).");
 

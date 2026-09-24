@@ -5,6 +5,8 @@ namespace SalvatoreCervone\PermissionToolkit\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use SalvatoreCervone\PermissionToolkit\Events\PermissionCreated;
+use SalvatoreCervone\PermissionToolkit\Events\PermissionDeleted;
 use SalvatoreCervone\PermissionToolkit\Services\AuditLogger;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
@@ -38,6 +40,8 @@ class PermissionController extends Controller
             metadata: ['permission_id' => $permission->id, 'guard_name' => $permission->guard_name]
         );
 
+        event(new PermissionCreated($permission));
+
         return response()->json([
             'success' => true,
             'permission' => $permission,
@@ -63,6 +67,8 @@ class PermissionController extends Controller
 
         $permission->delete();
         $registrar->forgetCachedPermissions();
+
+        event(new PermissionDeleted($permName, $id));
 
         return response()->json([
             'success' => true,

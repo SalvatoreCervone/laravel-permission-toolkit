@@ -14,7 +14,8 @@ class SimulatePermissionCommand extends Command
                             {user : User ID, Email, or Username}
                             {ability : Permission or ability name to evaluate}
                             {--model= : Optional target Eloquent model class (e.g. App\\Models\\Invoice)}
-                            {--id= : Optional target Eloquent model record ID}';
+                            {--id= : Optional target Eloquent model record ID}
+                            {--team= : Optional Spatie team ID for multi-tenant simulation}';
 
     /**
      * The console command description.
@@ -30,6 +31,7 @@ class SimulatePermissionCommand extends Command
         $ability = $this->argument('ability');
         $modelClass = $this->option('model');
         $modelId = $this->option('id');
+        $teamId = $this->option('team');
 
         $userModelClass = config('permission-toolkit.user_model')
             ?? config('auth.providers.users.model', 'App\\Models\\User');
@@ -82,12 +84,15 @@ class SimulatePermissionCommand extends Command
         $this->line("Target User  : " . ($user->name ?? $user->email) . " (ID: {$user->id})");
         $this->line("User Roles   : " . implode(', ', method_exists($user, 'getRoleNames') ? $user->getRoleNames()->toArray() : ['N/A']));
         $this->line("Testing Ability : <comment>{$ability}</comment>");
+        if ($teamId !== null) {
+            $this->line("Target Team  : #{$teamId}");
+        }
         if ($targetInstance) {
             $this->line("Target Model : " . (is_object($targetInstance) ? get_class($targetInstance) . " #{$targetInstance->id}" : $targetInstance));
         }
         $this->newLine();
 
-        $result = $simulator->simulate($user, $ability, $targetInstance);
+        $result = $simulator->simulate($user, $ability, $targetInstance, $teamId);
 
         $this->line("<options=bold>Trace Breakdown:</options=bold>");
         $tableRows = [];

@@ -2,6 +2,7 @@
 
 namespace SalvatoreCervone\PermissionToolkit;
 
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 use SalvatoreCervone\PermissionToolkit\Commands\DoctorPermissionCommand;
 use SalvatoreCervone\PermissionToolkit\Commands\ExportPermissionsCommand;
@@ -10,6 +11,7 @@ use SalvatoreCervone\PermissionToolkit\Commands\PruneAuditLogsCommand;
 use SalvatoreCervone\PermissionToolkit\Commands\SimulatePermissionCommand;
 use SalvatoreCervone\PermissionToolkit\Services\AuthorizationSimulator;
 use SalvatoreCervone\PermissionToolkit\Services\IntegrityChecker;
+use SalvatoreCervone\PermissionToolkit\View\Components\Matrix;
 
 class PermissionToolkitServiceProvider extends ServiceProvider
 {
@@ -37,6 +39,10 @@ class PermissionToolkitServiceProvider extends ServiceProvider
         $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'permission-toolkit');
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'permission-toolkit');
         $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+
+        // Register Embeddable Blade Component
+        Blade::component('permission-toolkit-matrix', Matrix::class);
+        Blade::componentNamespace('SalvatoreCervone\\PermissionToolkit\\View\\Components', 'permission-toolkit');
 
         if ($this->app->runningInConsole()) {
             // Publish Config

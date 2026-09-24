@@ -122,7 +122,50 @@ PermissionToolkit::auth(function ($request) {
 
 ---
 
-## 🌐 Web Panel Navigation
+## 🔲 Embeddable Blade Component
+
+Want to embed the permission matrix directly inside your custom dashboard without using the standalone layout?
+
+```blade
+{{-- In any Blade view: --}}
+<x-permission-toolkit-matrix />
+
+{{-- Or filter by specific guard or module: --}}
+<x-permission-toolkit-matrix guard="web" module="Invoices" />
+```
+
+---
+
+## 📢 Domain Events & Webhook Integrations
+
+The package dispatches real-time domain events for all state changes, allowing you to easily trigger webhooks, log to SIEM systems, or notify administrators:
+
+| Event | Dispatched When | Payload |
+|---|---|---|
+| `SalvatoreCervone\PermissionToolkit\Events\PermissionToggled` | Single or bulk matrix toggle | `$role`, `$permission`, `$action` (`assigned`\|`revoked`), `$causer` |
+| `SalvatoreCervone\PermissionToolkit\Events\UserAccessUpdated` | User roles/permissions updated | `$user`, `$addedRoles`, `$removedRoles`, `$addedPerms`, `$removedPerms` |
+| `SalvatoreCervone\PermissionToolkit\Events\RoleCreated` | New role created | `$role` |
+| `SalvatoreCervone\PermissionToolkit\Events\RoleDeleted` | Role deleted | `$roleName`, `$roleId` |
+| `SalvatoreCervone\PermissionToolkit\Events\PermissionCreated` | New permission created | `$permission` |
+| `SalvatoreCervone\PermissionToolkit\Events\PermissionDeleted` | Permission deleted | `$permissionName`, `$permissionId` |
+| `SalvatoreCervone\PermissionToolkit\Events\PermissionsExported` | Permissions exported to JSON | `$rolesCount`, `$permissionsCount` |
+| `SalvatoreCervone\PermissionToolkit\Events\PermissionsImported` | Permissions imported from JSON | `$rolesCount`, `$permissionsCount`, `$fresh` |
+| `SalvatoreCervone\PermissionToolkit\Events\AuditLogsPruned` | Audit logs cleaned | `$deletedCount`, `$days` |
+
+Example listener in your application:
+```php
+use SalvatoreCervone\PermissionToolkit\Events\PermissionToggled;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
+
+Event::listen(PermissionToggled::class, function (PermissionToggled $event) {
+    Log::notice("Permission [{$event->permission->name}] {$event->action} for role [{$event->role->name}]");
+});
+```
+
+---
+
+## 🌐 Web Panel Navigation & Features
 
 Protected by `['web', 'auth', Authorize::class]` middleware:
 
@@ -130,31 +173,35 @@ Protected by `['web', 'auth', Authorize::class]` middleware:
 https://your-app.test/permission-manager
 ```
 
-- **Matrice Ruoli**: `/permission-manager/matrix` (toggle asincrono con selettore Multi-Guard e ricerca)
-- **Gestione Utenti**: `/permission-manager/users` (supporto per ID numerici, UUID e ULID)
-- **Diagnostic Simulator**: `/permission-manager/simulator` (test interattivo con supporto per Gate globali e Policy)
-- **Audit Trail**: `/permission-manager/audit-logs` (registro di sicurezza transazionale)
-- **Integrity Doctor**: `/permission-manager/doctor` (diagnostica senza N+1 query)
+- **Matrice Ruoli**: `/permission-manager/matrix`
+  - **Bulk Actions**: One-click mass assignment (`✓`) and revocation (`✕`) per role across entire modules.
+  - **Module Filter**: Group permissions by feature (`Users`, `Billing`, `Settings`) and filter quickly.
+  - **1-Click Web Export & Import**: Download and upload role/permission JSON packages directly from the UI.
+- **Gestione Utenti**: `/permission-manager/users` (supporto per ID numerici, UUID e ULID, ricerca e reset password controllato)
+- **Diagnostic Simulator**: `/permission-manager/simulator` (test interattivo con supporto per Gate globali, Policy e Spatie Teams)
+- **Audit Trail**: `/permission-manager/audit-logs` (registro di conformità transazionale)
+- **Integrity Doctor**: `/permission-manager/doctor` (diagnostica senza query N+1)
+- **🌓 Dark / Light Mode**: Seamless theme toggle in the header with persistent state.
 
 ---
 
 ## 🛠️ CLI Commands
 
 ```bash
-# Diagnostic Simulator (AWS IAM style)
+# Diagnostic Simulator (AWS IAM style with Teams support)
 php artisan permission:simulate 42 "invoices.create"
-php artisan permission:simulate mario@demo.test "update" --model="App\Models\Invoice" --id=15
+php artisan permission:simulate mario@demo.test "update" --model="App\Models\Invoice" --id=15 --team=3
 
 # Database Health Check (Optimized set-based queries)
 php artisan permission:doctor
 
-# Audit Trail Pruning (Respects retention_days config)
+# Audit Trail Pruning (Pass --days=0 to keep indefinitely)
 php artisan permission:audit-prune
 php artisan permission:audit-prune --days=30
 
-# Sync across environments
+# Sync across environments (JSON Export & Import)
 php artisan permission:export --file=permissions.json
-php artisan permission:import --file=permissions.json
+php artisan permission:import --file=permissions.json --fresh
 ```
 
 ---

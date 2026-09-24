@@ -5,6 +5,8 @@ namespace SalvatoreCervone\PermissionToolkit\Http\Controllers;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use SalvatoreCervone\PermissionToolkit\Events\RoleCreated;
+use SalvatoreCervone\PermissionToolkit\Events\RoleDeleted;
 use SalvatoreCervone\PermissionToolkit\Services\AuditLogger;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -37,6 +39,8 @@ class RoleController extends Controller
             targetName: "Role: {$role->name} ({$role->guard_name})",
             metadata: ['role_id' => $role->id, 'guard_name' => $role->guard_name]
         );
+
+        event(new RoleCreated($role));
 
         return response()->json([
             'success' => true,
@@ -82,6 +86,8 @@ class RoleController extends Controller
 
         $role->delete();
         $registrar->forgetCachedPermissions();
+
+        event(new RoleDeleted($roleName, $id));
 
         return response()->json([
             'success' => true,

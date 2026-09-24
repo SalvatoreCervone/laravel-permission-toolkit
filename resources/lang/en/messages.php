@@ -235,4 +235,20 @@ return [
     'all_guards' => 'All Guards',
     'sim_step_detail_gate_pass' => 'Native Laravel Gate for [:ability] evaluated successfully: ALLOWED.',
     'sim_reason_gate_allowed' => 'Explicitly granted by native Laravel Gate for ability [:ability].',
+
+    // Bulk & Modules & Import/Export
+    'all_modules' => 'All Modules',
+    'export_btn' => 'Export',
+    'export_btn_title' => 'Download JSON backup of roles and permissions',
+    'import_btn' => 'Import',
+    'import_btn_title' => 'Upload JSON backup of roles and permissions',
+    'import_modal_title' => 'Import Roles & Permissions from JSON',
+    'import_select_file' => 'Select JSON file (.json)',
+    'import_fresh_warning' => 'Fresh mode: wipe all existing roles and permissions before importing',
+    'import_submit_btn' => 'Start Import',
+    'import_invalid_structure' => 'Invalid file structure. Ensure it contains "roles" and "permissions" keys.',
+    'import_success' => 'Import completed: synced :roles roles and :permissions permissions.',
+    'bulk_processed' => 'Updated :count permissions for role [:role].',
+    'bulk_assign_tooltip' => 'Assign all :module permissions to role :role',
+    'bulk_revoke_tooltip' => 'Revoke all :module permissions from role :role',
 ];

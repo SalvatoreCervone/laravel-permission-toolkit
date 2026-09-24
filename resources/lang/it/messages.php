@@ -235,4 +235,20 @@ return [
     'all_guards' => 'Tutte le Guardie',
     'sim_step_detail_gate_pass' => 'Gate nativo di Laravel per [:ability] valutato con successo: ACCORDATO.',
     'sim_reason_gate_allowed' => 'Autorizzato esplicitamente dal Gate nativo di Laravel per l\'abilità [:ability].',
+
+    // Bulk & Modules & Import/Export
+    'all_modules' => 'Tutti i Moduli',
+    'export_btn' => 'Esporta',
+    'export_btn_title' => 'Scarica backup JSON di ruoli e permessi',
+    'import_btn' => 'Importa',
+    'import_btn_title' => 'Carica file JSON di ruoli e permessi',
+    'import_modal_title' => 'Importa Ruoli & Permessi da JSON',
+    'import_select_file' => 'Seleziona file JSON (.json)',
+    'import_fresh_warning' => 'Modalità Fresh: cancella tutti i ruoli e permessi esistenti prima dell\'importazione',
+    'import_submit_btn' => 'Avvia Importazione',
+    'import_invalid_structure' => 'Struttura file non valida. Assicurati che contenga le chiavi "roles" e "permissions".',
+    'import_success' => 'Importazione completata: sincronizzati :roles ruoli e :permissions permessi.',
+    'bulk_processed' => 'Aggiornati :count permessi per il ruolo [:role].',
+    'bulk_assign_tooltip' => 'Assegna tutti i permessi del modulo :module al ruolo :role',
+    'bulk_revoke_tooltip' => 'Revoca tutti i permessi del modulo :module dal ruolo :role',
 ];

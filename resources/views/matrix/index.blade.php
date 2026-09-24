@@ -147,12 +147,28 @@
                     <option value="all" {{ $selectedGuard === 'all' ? 'selected' : '' }}>{{ __('permission-toolkit::messages.all_guards') }}</option>
                 </select>
             @endif
-            <input type="text" id="permissionFilter" class="input-control" style="width: 220px;" placeholder="{{ __('permission-toolkit::messages.matrix_search_placeholder') }}">
+
+            @if(!empty($availableModules) && count($availableModules) > 1)
+                <select onchange="filterByModule(this.value)" class="input-control" style="width: auto; padding: 0.45rem 0.75rem; font-size: 0.85rem; border-color: #6366f1;">
+                    <option value="all" {{ $selectedModule === 'all' ? 'selected' : '' }}>📂 {{ __('permission-toolkit::messages.all_modules') }} ({{ count($availableModules) }})</option>
+                    @foreach($availableModules as $mod)
+                        <option value="{{ $mod }}" {{ $selectedModule === $mod ? 'selected' : '' }}>📂 {{ $mod }}</option>
+                    @endforeach
+                </select>
+            @endif
+
+            <input type="text" id="permissionFilter" class="input-control" style="width: 200px;" placeholder="{{ __('permission-toolkit::messages.matrix_search_placeholder') }}">
             <button type="button" class="btn" onclick="openModal('modalRole')">
                 {{ __('permission-toolkit::messages.matrix_new_role_btn') }}
             </button>
             <button type="button" class="btn btn-secondary" onclick="openModal('modalPerm')">
                 {{ __('permission-toolkit::messages.matrix_new_perm_btn') }}
+            </button>
+            <a href="{{ route('permission-toolkit.export') }}" class="btn btn-secondary" title="{{ __('permission-toolkit::messages.export_btn_title') }}">
+                📥 {{ __('permission-toolkit::messages.export_btn') }}
+            </a>
+            <button type="button" class="btn btn-secondary" onclick="openModal('modalImport')" title="{{ __('permission-toolkit::messages.import_btn_title') }}">
+                📤 {{ __('permission-toolkit::messages.import_btn') }}
             </button>
         </div>
     </div>
@@ -198,7 +214,25 @@
                     <td class="module-header-sticky" style="padding: 0.4rem 1rem;">
                         {{ __('permission-toolkit::messages.matrix_module_prefix', ['group' => $group, 'count' => count($perms)]) }}
                     </td>
-                    <td class="module-row-spacer" colspan="{{ count($roles) }}" style="background: rgba(79, 70, 229, 0.08); border-bottom: 1px solid var(--border);"></td>
+                    @foreach($roles as $role)
+                        @php $permIdsJson = json_encode($perms->pluck('id')->values()->all()); @endphp
+                        <td class="role-cell module-bulk-cell" data-role-id="{{ $role->id }}" style="text-align: center; background: rgba(79, 70, 229, 0.08); border-bottom: 1px solid var(--border); padding: 0.25rem;">
+                            <div style="display: inline-flex; gap: 0.3rem; align-items: center; justify-content: center;">
+                                <button type="button" 
+                                        onclick="bulkToggleRole({{ $role->id }}, {{ $permIdsJson }}, 'assign')" 
+                                        title="{{ __('permission-toolkit::messages.bulk_assign_tooltip', ['module' => $group, 'role' => $role->name]) }}"
+                                        style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #6ee7b7; border-radius: 3px; font-size: 0.65rem; padding: 0.15rem 0.4rem; cursor: pointer; line-height: 1;">
+                                    ✓
+                                </button>
+                                <button type="button" 
+                                        onclick="bulkToggleRole({{ $role->id }}, {{ $permIdsJson }}, 'revoke')" 
+                                        title="{{ __('permission-toolkit::messages.bulk_revoke_tooltip', ['module' => $group, 'role' => $role->name]) }}"
+                                        style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; border-radius: 3px; font-size: 0.65rem; padding: 0.15rem 0.4rem; cursor: pointer; line-height: 1;">
+                                    ✕
+                                </button>
+                            </div>
+                        </td>
+                    @endforeach
                 </tr>
                 @foreach($perms as $permission)
                     <tr class="perm-row" data-perm-id="{{ $permission->id }}" data-perm-name="{{ strtolower($permission->name) }}" data-group-name="{{ strtolower($group) }}">
@@ -276,6 +310,32 @@
             <button type="button" class="btn btn-secondary" onclick="closeModal('modalPerm')">{{ __('permission-toolkit::messages.btn_cancel') }}</button>
             <button type="button" class="btn" onclick="submitCreatePerm()">{{ __('permission-toolkit::messages.matrix_modal_create_perm_btn') }}</button>
         </div>
+    </div>
+</div>
+
+<!-- Modal Importa JSON -->
+<div id="modalImport" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+    <div style="background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem; border-radius: 0.5rem; width: 100%; max-width: 480px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
+        <h3 style="margin-bottom: 1rem; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
+            📤 {{ __('permission-toolkit::messages.import_modal_title') }}
+        </h3>
+        <form method="POST" action="{{ route('permission-toolkit.import') }}" enctype="multipart/form-data">
+            @csrf
+            <div style="margin-bottom: 1rem;">
+                <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">{{ __('permission-toolkit::messages.import_select_file') }}</label>
+                <input type="file" name="file" accept=".json,application/json" class="input-control" required style="padding: 0.5rem;">
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+                    <input type="checkbox" name="fresh" value="1" style="accent-color: #ef4444;">
+                    <span style="color: #fca5a5;">{{ __('permission-toolkit::messages.import_fresh_warning') }}</span>
+                </label>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('modalImport')">{{ __('permission-toolkit::messages.btn_cancel') }}</button>
+                <button type="submit" class="btn">{{ __('permission-toolkit::messages.import_submit_btn') }}</button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection
@@ -526,6 +586,53 @@
             if (d.success) location.reload();
             else showToast(d.message || "{{ __('permission-toolkit::messages.error') }}", 'danger');
         });
+    }
+
+    function bulkToggleRole(roleId, permIds, action) {
+        if (!permIds || !permIds.length) return;
+
+        const actionText = action === 'assign' ? 'assegnare' : 'revocare';
+        if (!confirm(`Sei sicuro di voler ${actionText} tutti i permessi del modulo?`)) return;
+
+        fetch("{{ route('permission-toolkit.matrix.bulk-toggle') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                role_id: roleId,
+                permission_ids: permIds,
+                action: action
+            })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                // Update corresponding checkboxes in DOM instantly
+                permIds.forEach(id => {
+                    const chk = document.querySelector(`.perm-toggle[data-role-id="${roleId}"][data-perm-id="${id}"]`);
+                    if (chk) chk.checked = (action === 'assign');
+                });
+                showToast(d.message || "Operazione completata con successo!");
+            } else {
+                showToast(d.message || "{{ __('permission-toolkit::messages.error') }}", 'danger');
+            }
+        })
+        .catch(err => {
+            showToast("{{ __('permission-toolkit::messages.server_error') }}", 'danger');
+        });
+    }
+
+    function filterByModule(module) {
+        const url = new URL(window.location.href);
+        if (module === 'all') {
+            url.searchParams.delete('module');
+        } else {
+            url.searchParams.set('module', module);
+        }
+        window.location.href = url.toString();
     }
 
     document.addEventListener('DOMContentLoaded', function () {

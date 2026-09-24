@@ -14,25 +14,44 @@ class AuthorizationSimulator
     public function simulate(
         Authenticatable|Model $user,
         string $ability,
-        mixed $target = null
+        mixed $target = null,
+        int|string|null $teamId = null
     ): array {
         $steps = [];
         $isAllowed = false;
         $decisionReason = '';
 
-        // Step 1: User Identity Verification
-        $userClass = get_class($user);
-        $userId = $user->getAuthIdentifier();
-        $userName = $user->name ?? $user->email ?? __('permission-toolkit::messages.sim_anonymous_user', ['id' => $userId]);
+        // Handle Spatie Teams context if provided
+        $previousTeamId = null;
+        $registrar = null;
+        if ($teamId !== null && class_exists('Spatie\Permission\PermissionRegistrar')) {
+            $registrar = app('Spatie\Permission\PermissionRegistrar');
+            if (method_exists($registrar, 'getPermissionsTeamId')) {
+                $previousTeamId = $registrar->getPermissionsTeamId();
+                $registrar->setPermissionsTeamId($teamId);
+            }
+        }
+
+        try {
+            // Step 1: User Identity Verification
+            $userClass = get_class($user);
+            $userId = $user->getAuthIdentifier();
+            $userName = $user->name ?? $user->email ?? __('permission-toolkit::messages.sim_anonymous_user', ['id' => $userId]);
+
+        $identityDetail = __('permission-toolkit::messages.sim_step_detail_identity', [
+            'class' => $userClass,
+            'id' => $userId,
+            'name' => $userName,
+        ]);
+
+        if ($teamId !== null) {
+            $identityDetail .= " • Team #{$teamId}";
+        }
 
         $steps[] = [
             'step' => 'User Identity',
             'status' => 'PASS',
-            'detail' => __('permission-toolkit::messages.sim_step_detail_identity', [
-                'class' => $userClass,
-                'id' => $userId,
-                'name' => $userName,
-            ]),
+            'detail' => $identityDetail,
         ];
 
         // Step 2: Super Admin Check
@@ -216,13 +235,18 @@ class AuthorizationSimulator
             ];
         }
 
-        if (! $isAllowed && empty($decisionReason)) {
-            $decisionReason = __('permission-toolkit::messages.sim_reason_no_grant', [
-                'ability' => $ability,
-            ]);
-        }
+            if (! $isAllowed && empty($decisionReason)) {
+                $decisionReason = __('permission-toolkit::messages.sim_reason_no_grant', [
+                    'ability' => $ability,
+                ]);
+            }
 
-        return $this->formatResult($isAllowed, $decisionReason, $steps, $user, $ability, $target);
+            return $this->formatResult($isAllowed, $decisionReason, $steps, $user, $ability, $target);
+        } finally {
+            if ($teamId !== null && $registrar && method_exists($registrar, 'setPermissionsTeamId')) {
+                $registrar->setPermissionsTeamId($previousTeamId);
+            }
+        }
     }
 
     /**

@@ -7,11 +7,20 @@
     <title>@yield('title', __('permission-toolkit::messages.layout_title')) - Spatie Toolkit</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('ptk-theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+            if (savedTheme === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
     <style>
         :root {
             --bg-body: #0b0f19;
             --bg-card: #111827;
             --bg-card-hover: #1f2937;
+            --bg-header: #171f2e;
             --border: #374151;
             --text-main: #f9fafb;
             --text-muted: #9ca3af;
@@ -20,6 +29,42 @@
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
+        }
+        [data-theme="light"] {
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f1f5f9;
+            --bg-header: #f8fafc;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --success: #059669;
+            --danger: #dc2626;
+            --warning: #d97706;
+        }
+        [data-theme="light"] .badge-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
+        [data-theme="light"] .badge-danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        [data-theme="light"] .badge-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        [data-theme="light"] .badge-info { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
+        [data-theme="light"] tr:hover td { background-color: rgba(79, 70, 229, 0.04); }
+        [data-theme="light"] #matrixTable thead th,
+        [data-theme="light"] #matrixTable thead th:first-child {
+            background-color: #f1f5f9 !important;
+            color: #1e293b !important;
+        }
+        [data-theme="light"] #matrixTable tbody td:first-child {
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+        }
+        [data-theme="light"] .module-header-sticky {
+            background: #ede9fe !important;
+            color: #5b21b6 !important;
+        }
+        [data-theme="light"] .input-control {
+            background-color: #ffffff;
+            color: #0f172a;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -277,7 +322,7 @@
             </nav>
 
             <!-- Language Switcher -->
-            <div class="lang-switcher" style="display: inline-flex; align-items: center; gap: 0.2rem; background: #171f2e; border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.2rem 0.35rem;">
+            <div class="lang-switcher" style="display: inline-flex; align-items: center; gap: 0.2rem; background: var(--bg-card-hover); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.2rem 0.35rem;">
                 <a href="{{ route('permission-toolkit.locale', 'it') }}" 
                    style="text-decoration: none; font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 0.25rem; transition: all 0.2s; {{ app()->getLocale() === 'it' ? 'background: var(--primary); color: #ffffff;' : 'color: var(--text-muted);' }}"
                    title="Italiano">
@@ -289,6 +334,15 @@
                     🇬🇧 EN
                 </a>
             </div>
+
+            <!-- Theme Toggle Button -->
+            <button type="button" 
+                    id="theme-toggle-btn"
+                    onclick="toggleTheme()"
+                    title="Toggle Theme"
+                    style="background: var(--bg-card-hover); border: 1px solid var(--border); color: var(--text-main); border-radius: 0.375rem; padding: 0.35rem 0.65rem; cursor: pointer; display: inline-flex; align-items: center; font-size: 0.9rem; transition: all 0.2s;">
+                <span id="theme-toggle-icon">🌙</span>
+            </button>
         </div>
     </header>
 
@@ -299,6 +353,24 @@
     <div id="toast-container"></div>
 
     <script>
+        function updateThemeIcon() {
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            const icon = document.getElementById('theme-toggle-icon');
+            if (icon) icon.innerText = isLight ? '☀️' : '🌙';
+        }
+        function toggleTheme() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const target = current === 'light' ? 'dark' : 'light';
+            if (target === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+            }
+            localStorage.setItem('ptk-theme', target);
+            updateThemeIcon();
+        }
+        document.addEventListener('DOMContentLoaded', updateThemeIcon);
+
         function showToast(message, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');

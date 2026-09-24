@@ -8,6 +8,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
+use SalvatoreCervone\PermissionToolkit\Events\UserAccessUpdated;
 use SalvatoreCervone\PermissionToolkit\Services\AuditLogger;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -108,11 +109,16 @@ class UserController extends Controller
 
         $user = (new $userModelClass)->newQuery()->findOrFail($id);
 
-        $selectedRoleIds = $request->input('roles', []);
-        $selectedPermIds = $request->input('permissions', []);
+        $selectedRoleInputs = (array) $request->input('roles', []);
+        $selectedPermInputs = (array) $request->input('permissions', $request->input('direct_permissions', []));
 
-        $roles = Role::whereIn('id', $selectedRoleIds)->get();
-        $permissions = Permission::whereIn('id', $selectedPermIds)->get();
+        $roles = Role::where(function ($q) use ($selectedRoleInputs) {
+            $q->whereIn('id', $selectedRoleInputs)->orWhereIn('name', $selectedRoleInputs);
+        })->get();
+
+        $permissions = Permission::where(function ($q) use ($selectedPermInputs) {
+            $q->whereIn('id', $selectedPermInputs)->orWhereIn('name', $selectedPermInputs);
+        })->get();
 
         $oldRoles = $user->roles->pluck('name')->toArray();
         $oldPerms = $user->permissions->pluck('name')->toArray();
@@ -145,6 +151,8 @@ class UserController extends Controller
             }
 
             $registrar->forgetCachedPermissions();
+
+            event(new UserAccessUpdated($user, $addedRoles, $removedRoles, $addedPerms, $removedPerms));
         });
 
         return redirect()
