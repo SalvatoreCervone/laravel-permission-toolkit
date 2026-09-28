@@ -45,7 +45,7 @@ class PermissionAuditLog extends Model
      */
     public function causer(): MorphTo
     {
-        return $this->morphTo();
+        return $this->morphTo()->withTrashed();
     }
 
     /**
@@ -53,6 +53,6 @@ class PermissionAuditLog extends Model
      */
     public function user(): MorphTo
     {
-        return $this->morphTo();
+        return $this->morphTo()->withTrashed();
     }
 }

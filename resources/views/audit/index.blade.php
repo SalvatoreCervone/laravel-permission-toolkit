@@ -115,10 +115,12 @@
                             </td>
                             <td>
                                 @php
-                                    $userModelClass = config('permission-toolkit.user_model', 'App\\Models\\User');
-                                    $isUserModel = $log->user && ($log->user instanceof $userModelClass || $log->user instanceof \Illuminate\Contracts\Auth\Authenticatable);
+                                    $userModelClass = config('permission-toolkit.user_model') ?: (config('auth.providers.users.model') ?: 'App\\Models\\User');
+                                    $isAuthenticatable = $log->user instanceof \Illuminate\Contracts\Auth\Authenticatable
+                                        || ($log->user && $log->user instanceof $userModelClass);
+                                    $isUserTarget = $isAuthenticatable && ! ($log->user instanceof \Spatie\Permission\Contracts\Role || $log->user instanceof \Spatie\Permission\Contracts\Permission);
                                 @endphp
-                                @if($isUserModel)
+                                @if($isUserTarget)
                                     @php
                                         $userDisplay = \SalvatoreCervone\PermissionToolkit\PermissionToolkit::getUserDisplayName($log->user);
                                     @endphp

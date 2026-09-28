@@ -185,6 +185,45 @@ class PanelHttpRoutesTest extends TestCase
         $response->assertSee('Role: AccountantRole');
         $response->assertSee('<span class="badge badge-success">', false);
         $response->assertDontSee('<span class="badge badge-danger">', false);
+
+        // Role and permission creations should show '-' as involved user, NOT the role/perm name
+        $response->assertSee('Role: AccountantRole (web)');
+        $response->assertDontSee('<td>AccountantRole</td>', false);
+    }
+
+    /** @test */
+    public function it_renders_audit_trail_involved_user_using_configured_display_columns()
+    {
+        config(['permission-toolkit.users.display_columns' => ['cognome', 'nome']]);
+
+        // Add cognome / nome columns if not present
+        if (! \Illuminate\Support\Facades\Schema::hasColumn('users', 'cognome')) {
+            \Illuminate\Support\Facades\Schema::table('users', function ($table) {
+                $table->string('cognome')->nullable();
+                $table->string('nome')->nullable();
+            });
+        }
+
+        $targetUser = \SalvatoreCervone\PermissionToolkit\Tests\User::create([
+            'name' => 'ShouldNotShowNameOnly',
+            'cognome' => 'Rossi',
+            'nome' => 'Maurizio',
+            'email' => 'maurizio.rossi@example.com',
+            'password' => \Illuminate\Support\Facades\Hash::make('password'),
+        ]);
+
+        \SalvatoreCervone\PermissionToolkit\Services\AuditLogger::log(
+            targetUser: $targetUser,
+            action: 'assigned',
+            type: 'role',
+            targetName: 'admin',
+            causer: $this->user
+        );
+
+        $response = $this->actingAs($this->user)->get('/permission-manager/audit-logs');
+        $response->assertStatus(200);
+        // Must show 'Rossi Maurizio' according to display_columns config!
+        $response->assertSee('Rossi Maurizio');
     }
 
     /** @test */
