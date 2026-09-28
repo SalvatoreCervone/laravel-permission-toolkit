@@ -28,19 +28,26 @@
             <div style="flex: 1; min-width: 200px;">
                 <input type="text" name="search" class="input-control" value="{{ request('search') }}" placeholder="{{ __('permission-toolkit::messages.audit_search_placeholder') }}">
             </div>
-            <div style="width: 160px;">
+            <div style="width: 170px;">
                 <select name="action" class="input-control">
                     <option value="">{{ __('permission-toolkit::messages.audit_all_actions') }}</option>
+                    <option value="created" {{ request('action') == 'created' ? 'selected' : '' }}>{{ __('permission-toolkit::messages.audit_action_created') }}</option>
                     <option value="assigned" {{ request('action') == 'assigned' ? 'selected' : '' }}>{{ __('permission-toolkit::messages.audit_action_assigned') }}</option>
                     <option value="revoked" {{ request('action') == 'revoked' ? 'selected' : '' }}>{{ __('permission-toolkit::messages.audit_action_revoked') }}</option>
+                    <option value="deleted" {{ request('action') == 'deleted' ? 'selected' : '' }}>{{ __('permission-toolkit::messages.audit_action_deleted') }}</option>
+                    <option value="deactivated" {{ request('action') == 'deactivated' ? 'selected' : '' }}>{{ __('permission-toolkit::messages.audit_action_deactivated') }}</option>
+                    <option value="restored" {{ request('action') == 'restored' ? 'selected' : '' }}>{{ __('permission-toolkit::messages.audit_action_restored') }}</option>
+                    <option value="force_deleted" {{ request('action') == 'force_deleted' ? 'selected' : '' }}>{{ __('permission-toolkit::messages.audit_action_force_deleted') }}</option>
+                    <option value="password_reset" {{ request('action') == 'password_reset' ? 'selected' : '' }}>{{ __('permission-toolkit::messages.audit_action_password_reset') }}</option>
                 </select>
             </div>
-            <div style="width: 160px;">
+            <div style="width: 170px;">
                 <select name="type" class="input-control">
                     <option value="">{{ __('permission-toolkit::messages.audit_all_types') }}</option>
                     <option value="role" {{ request('type') == 'role' ? 'selected' : '' }}>{{ __('permission-toolkit::messages.audit_type_role') }}</option>
                     <option value="permission" {{ request('type') == 'permission' ? 'selected' : '' }}>{{ __('permission-toolkit::messages.audit_type_perm') }}</option>
                     <option value="role_permission" {{ request('type') == 'role_permission' ? 'selected' : '' }}>{{ __('permission-toolkit::messages.audit_type_role_perm') }}</option>
+                    <option value="user" {{ request('type') == 'user' ? 'selected' : '' }}>{{ __('permission-toolkit::messages.audit_type_user') }}</option>
                 </select>
             </div>
             <button type="submit" class="btn">{{ __('permission-toolkit::messages.audit_btn_filter') }}</button>
@@ -70,27 +77,52 @@
                             </td>
                             <td>
                                 @if($log->causer)
-                                    <strong>{{ $log->causer->name ?? $log->causer->email ?? 'User #' . $log->causer_id }}</strong>
+                                    @php
+                                        $causerDisplay = \SalvatoreCervone\PermissionToolkit\PermissionToolkit::getUserDisplayName($log->causer);
+                                    @endphp
+                                    <strong>{{ $causerDisplay ?: ($log->causer->email ?? 'User #' . $log->causer_id) }}</strong>
                                 @else
                                     <span style="color: var(--text-muted);">{{ __('permission-toolkit::messages.audit_system_cli') }}</span>
                                 @endif
                             </td>
                             <td>
-                                @if($log->action === 'assigned')
-                                    <span class="badge badge-success">Assigned</span>
-                                @else
-                                    <span class="badge badge-danger">Revoked</span>
-                                @endif
+                                @php
+                                    $actionBadgeClass = match($log->action) {
+                                        'created', 'assigned', 'restored' => 'badge-success',
+                                        'revoked', 'deleted', 'force_deleted' => 'badge-danger',
+                                        'deactivated' => 'badge-warning',
+                                        'password_reset' => 'badge-info',
+                                        default => 'badge-secondary',
+                                    };
+                                    $actionKey = 'permission-toolkit::messages.audit_action_' . $log->action;
+                                    $actionLabel = \Illuminate\Support\Facades\Lang::has($actionKey)
+                                        ? __($actionKey)
+                                        : ucfirst(str_replace('_', ' ', $log->action));
+                                @endphp
+                                <span class="badge {{ $actionBadgeClass }}">{{ $actionLabel }}</span>
                             </td>
                             <td>
-                                <span class="badge badge-info">{{ $log->type }}</span>
+                                @php
+                                    $typeKey = 'permission-toolkit::messages.audit_type_' . $log->type;
+                                    $typeLabel = \Illuminate\Support\Facades\Lang::has($typeKey)
+                                        ? __($typeKey)
+                                        : ucfirst(str_replace('_', ' ', $log->type));
+                                @endphp
+                                <span class="badge badge-info">{{ $typeLabel }}</span>
                             </td>
                             <td style="font-family: monospace; font-size: 0.85rem;">
                                 {{ $log->target_name }}
                             </td>
                             <td>
-                                @if($log->user)
-                                    {{ $log->user->name ?? $log->user->email ?? 'User #' . $log->user_id }}
+                                @php
+                                    $userModelClass = config('permission-toolkit.user_model', 'App\\Models\\User');
+                                    $isUserModel = $log->user && ($log->user instanceof $userModelClass || $log->user instanceof \Illuminate\Contracts\Auth\Authenticatable);
+                                @endphp
+                                @if($isUserModel)
+                                    @php
+                                        $userDisplay = \SalvatoreCervone\PermissionToolkit\PermissionToolkit::getUserDisplayName($log->user);
+                                    @endphp
+                                    {{ $userDisplay ?: ($log->user->email ?? 'User #' . $log->user_id) }}
                                 @else
                                     <span style="color: var(--text-muted);">-</span>
                                 @endif

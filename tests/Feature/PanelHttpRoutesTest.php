@@ -164,6 +164,30 @@ class PanelHttpRoutesTest extends TestCase
     }
 
     /** @test */
+    public function it_renders_correct_audit_badges_for_created_and_deleted_roles_and_permissions()
+    {
+        // 1. Create a permission
+        $this->actingAs($this->user)->post(route('permission-toolkit.permissions.store'), [
+            'name' => 'billing.invoices.view',
+            'guard_name' => 'web',
+        ]);
+
+        // 2. Create a role
+        $this->actingAs($this->user)->post(route('permission-toolkit.roles.store'), [
+            'name' => 'AccountantRole',
+            'guard_name' => 'web',
+        ]);
+
+        // Audit page should display Created / Creato, NOT Revoked
+        $response = $this->actingAs($this->user)->get('/permission-manager/audit-logs');
+        $response->assertStatus(200);
+        $response->assertSee('Permission: billing.invoices.view');
+        $response->assertSee('Role: AccountantRole');
+        $response->assertSee('<span class="badge badge-success">', false);
+        $response->assertDontSee('<span class="badge badge-danger">', false);
+    }
+
+    /** @test */
     public function it_can_access_doctor_page()
     {
         $response = $this->actingAs($this->user)->get('/permission-manager/doctor');
