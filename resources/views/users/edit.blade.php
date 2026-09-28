@@ -1,6 +1,10 @@
 @extends('permission-toolkit::layouts.app')
 
-@section('title', __('permission-toolkit::messages.user_edit_title', ['name' => $user->name ?? $user->email]))
+@php
+    $displayName = \SalvatoreCervone\PermissionToolkit\PermissionToolkit::getUserDisplayName($user);
+@endphp
+
+@section('title', __('permission-toolkit::messages.user_edit_title', ['name' => $displayName]))
 
 @section('content')
 <div style="max-width: 1000px; margin: 0 auto;">
@@ -10,7 +14,7 @@
                 {{ __('permission-toolkit::messages.user_edit_back') }}
             </a>
             <h1 style="font-size: 1.5rem; font-weight: 700; margin-top: 0.25rem;">
-                {{ __('permission-toolkit::messages.user_edit_heading', ['name' => $user->name ?? $user->email]) }}
+                {{ __('permission-toolkit::messages.user_edit_heading', ['name' => $displayName]) }}
             </h1>
         </div>
         <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
@@ -131,7 +135,7 @@
                     {{ __('permission-toolkit::messages.user_pwd_modal_title') }}
                 </h3>
                 <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0.25rem 0 0 0;">
-                    {{ __('permission-toolkit::messages.user_pwd_modal_user', ['name' => $user->name ?? $user->email]) }}
+                    {{ __('permission-toolkit::messages.user_pwd_modal_user', ['name' => $displayName]) }}
                 </p>
             </div>
             <button type="button" onclick="closePasswordModal()" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; line-height: 1; padding: 0.25rem;">

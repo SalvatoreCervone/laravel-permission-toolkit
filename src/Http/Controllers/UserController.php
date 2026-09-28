@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use SalvatoreCervone\PermissionToolkit\Events\UserAccessUpdated;
+use SalvatoreCervone\PermissionToolkit\PermissionToolkit;
 use SalvatoreCervone\PermissionToolkit\Services\AuditLogger;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -33,6 +34,9 @@ class UserController extends Controller
         $permissions = Permission::orderBy('name')->get();
 
         $query = (new $userModelClass)->newQuery()->with(['roles', 'permissions']);
+        $table = (new $userModelClass)->getTable();
+        $keyName = (new $userModelClass)->getKeyName();
+        $displayColumns = PermissionToolkit::getUserDisplayColumns();
 
         $statusFilter = $request->get('status', 'all');
         if ($supportsSoftDeletes) {
@@ -46,28 +50,29 @@ class UserController extends Controller
         }
 
         if ($search = trim($request->get('search', ''))) {
-            $query->where(function ($q) use ($search) {
-                $table = $q->getModel()->getTable();
+            $query->where(function ($q) use ($search, $table, $displayColumns) {
                 $hasCondition = false;
 
                 // Match integer ID only when search input is numeric to avoid PostgreSQL/SQLServer type mismatch
                 if (is_numeric($search)) {
-                    $q->where($q->getModel()->getKeyName(), $search);
+                    $q->where($q->getModel()->getQualifiedKeyName(), $search);
                     $hasCondition = true;
                 }
 
-                if (Schema::hasColumn($table, 'name')) {
-                    $hasCondition ? $q->orWhere('name', 'like', "%{$search}%") : $q->where('name', 'like', "%{$search}%");
-                    $hasCondition = true;
+                // Check all configured display columns
+                foreach ($displayColumns as $col) {
+                    if (is_string($col) && Schema::hasColumn($table, $col)) {
+                        $hasCondition ? $q->orWhere($table . '.' . $col, 'like', "%{$search}%") : $q->where($table . '.' . $col, 'like', "%{$search}%");
+                        $hasCondition = true;
+                    }
                 }
 
-                if (Schema::hasColumn($table, 'email')) {
-                    $hasCondition ? $q->orWhere('email', 'like', "%{$search}%") : $q->where('email', 'like', "%{$search}%");
-                    $hasCondition = true;
-                }
-
-                if (Schema::hasColumn($table, 'username')) {
-                    $hasCondition ? $q->orWhere('username', 'like', "%{$search}%") : $q->where('username', 'like', "%{$search}%");
+                // Check standard fallback columns
+                foreach (['name', 'email', 'username'] as $stdCol) {
+                    if (! in_array($stdCol, $displayColumns) && Schema::hasColumn($table, $stdCol)) {
+                        $hasCondition ? $q->orWhere($table . '.' . $stdCol, 'like', "%{$search}%") : $q->where($table . '.' . $stdCol, 'like', "%{$search}%");
+                        $hasCondition = true;
+                    }
                 }
             });
         }
@@ -90,6 +95,71 @@ class UserController extends Controller
             });
         }
 
+        // 1. Prima tutti gli attivi (active non-trashed users always first when soft deletes are supported)
+        $sortParam = $request->get('sort');
+        $directionParam = strtolower($request->get('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        if ($supportsSoftDeletes) {
+            $deletedAtCol = (new $userModelClass)->getDeletedAtColumn();
+            $statusDir = ($sortParam === 'status' && $directionParam === 'desc') ? 'DESC' : 'ASC';
+            $query->orderByRaw("CASE WHEN {$table}.{$deletedAtCol} IS NULL THEN 0 ELSE 1 END {$statusDir}");
+        }
+
+        // 2. Ordinamento colonne: basato sui parametri oppure sulla configurazione (display_columns / order_by)
+        if ($sortParam) {
+            if ($sortParam === 'status') {
+                foreach ($displayColumns as $col) {
+                    if (is_string($col) && Schema::hasColumn($table, $col)) {
+                        $query->orderBy($table . '.' . $col, 'asc');
+                    }
+                }
+            } elseif ($sortParam === 'user') {
+                foreach ($displayColumns as $col) {
+                    if (is_string($col) && Schema::hasColumn($table, $col)) {
+                        $query->orderBy($table . '.' . $col, $directionParam);
+                    }
+                }
+            } elseif (Schema::hasColumn($table, $sortParam)) {
+                $query->orderBy($table . '.' . $sortParam, $directionParam);
+            } elseif ($sortParam === 'name' && ! Schema::hasColumn($table, 'name')) {
+                foreach ($displayColumns as $col) {
+                    if (is_string($col) && Schema::hasColumn($table, $col)) {
+                        $query->orderBy($table . '.' . $col, $directionParam);
+                    }
+                }
+            }
+        } else {
+            $configuredOrderBy = config('permission-toolkit.users.order_by');
+
+            if (! empty($configuredOrderBy)) {
+                if (is_string($configuredOrderBy)) {
+                    $configuredOrderBy = array_map('trim', explode(',', $configuredOrderBy));
+                }
+                foreach ((array) $configuredOrderBy as $col => $dir) {
+                    if (is_int($col)) {
+                        $col = $dir;
+                        $dir = 'asc';
+                    }
+                    $dir = strtolower($dir) === 'desc' ? 'desc' : 'asc';
+                    if (is_string($col) && Schema::hasColumn($table, $col)) {
+                        $query->orderBy($table . '.' . $col, $dir);
+                    }
+                }
+            } else {
+                // Di default: ordinamento in base alle colonne configurate in display_columns (es. cognome, nome)
+                foreach ($displayColumns as $col) {
+                    if (is_string($col) && Schema::hasColumn($table, $col)) {
+                        $query->orderBy($table . '.' . $col, 'asc');
+                    }
+                }
+            }
+        }
+
+        // Deterministic secondary sort
+        if (Schema::hasColumn($table, $keyName)) {
+            $query->orderBy($table . '.' . $keyName, 'asc');
+        }
+
         $users = $query->paginate(20)->withQueryString();
 
         return view('permission-toolkit::users.index', compact(
@@ -99,7 +169,10 @@ class UserController extends Controller
             'supportsSoftDeletes',
             'selectedRole',
             'selectedPermission',
-            'statusFilter'
+            'statusFilter',
+            'displayColumns',
+            'sortParam',
+            'directionParam'
         ));
     }
 
@@ -196,9 +269,11 @@ class UserController extends Controller
             event(new UserAccessUpdated($user, $addedRoles, $removedRoles, $addedPerms, $removedPerms));
         });
 
+        $displayName = PermissionToolkit::getUserDisplayName($user);
+
         return redirect()
             ->route('permission-toolkit.users.edit', $id)
-            ->with('status', __('permission-toolkit::messages.msg_user_access_updated', ['name' => $user->name]));
+            ->with('status', __('permission-toolkit::messages.msg_user_access_updated', ['name' => $displayName]));
     }
 
     /**
@@ -258,7 +333,8 @@ class UserController extends Controller
             );
         });
 
-        $msg = __('permission-toolkit::messages.msg_user_password_reset', ['name' => $user->name]);
+        $displayName = PermissionToolkit::getUserDisplayName($user);
+        $msg = __('permission-toolkit::messages.msg_user_password_reset', ['name' => $displayName]);
         if ($dateApplied) {
             $msg .= __('permission-toolkit::messages.msg_user_password_field_updated', ['field' => $dateField, 'value' => $dateValue]);
         }
@@ -300,20 +376,21 @@ class UserController extends Controller
         }
 
         $isSoftDelete = $supportsSoftDeletes && ! $user->trashed();
+        $displayName = PermissionToolkit::getUserDisplayName($user);
 
         AuditLogger::log(
             targetUser: $user,
             action: $isSoftDelete ? 'deactivated' : 'deleted',
             type: 'user',
-            targetName: "User: " . ($user->name ?? $user->email ?? "#{$user->id}"),
+            targetName: "User: " . ($displayName ?: "#{$user->id}"),
             metadata: ['soft_delete' => $isSoftDelete]
         );
 
         $user->delete();
 
         $msg = $isSoftDelete
-            ? __('permission-toolkit::messages.msg_user_deactivated', ['name' => $user->name ?? "#{$user->id}"])
-            : __('permission-toolkit::messages.msg_user_deleted', ['name' => $user->name ?? "#{$user->id}"]);
+            ? __('permission-toolkit::messages.msg_user_deactivated', ['name' => $displayName ?: "#{$user->id}"])
+            : __('permission-toolkit::messages.msg_user_deleted', ['name' => $displayName ?: "#{$user->id}"]);
 
         return redirect()->route('permission-toolkit.users.index')->with('status', $msg);
     }
@@ -335,14 +412,16 @@ class UserController extends Controller
 
         $user->restore();
 
+        $displayName = PermissionToolkit::getUserDisplayName($user);
+
         AuditLogger::log(
             targetUser: $user,
             action: 'restored',
             type: 'user',
-            targetName: "User: " . ($user->name ?? $user->email ?? "#{$user->id}")
+            targetName: "User: " . ($displayName ?: "#{$user->id}")
         );
 
-        return back()->with('status', __('permission-toolkit::messages.msg_user_restored', ['name' => $user->name ?? "#{$user->id}"]));
+        return back()->with('status', __('permission-toolkit::messages.msg_user_restored', ['name' => $displayName ?: "#{$user->id}"]));
     }
 
     /**
@@ -372,11 +451,13 @@ class UserController extends Controller
             return back()->with('error', __('permission-toolkit::messages.cannot_delete_super_admin_user'));
         }
 
+        $displayName = PermissionToolkit::getUserDisplayName($user);
+
         AuditLogger::log(
             targetUser: $user,
             action: 'force_deleted',
             type: 'user',
-            targetName: "User: " . ($user->name ?? $user->email ?? "#{$user->id}")
+            targetName: "User: " . ($displayName ?: "#{$user->id}")
         );
 
         if (method_exists($user, 'roles')) {
@@ -392,6 +473,6 @@ class UserController extends Controller
             $user->delete();
         }
 
-        return redirect()->route('permission-toolkit.users.index')->with('status', __('permission-toolkit::messages.msg_user_force_deleted', ['name' => $user->name ?? "#{$user->id}"]));
+        return redirect()->route('permission-toolkit.users.index')->with('status', __('permission-toolkit::messages.msg_user_force_deleted', ['name' => $displayName ?: "#{$user->id}"]));
     }
 }

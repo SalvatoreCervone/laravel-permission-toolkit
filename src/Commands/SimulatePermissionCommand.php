@@ -81,7 +81,7 @@ class SimulatePermissionCommand extends Command
         $this->info("===============================================================");
         $this->info(" 🛡️  PERMISSIONS DIAGNOSTIC SIMULATOR (AWS IAM STYLE)");
         $this->info("===============================================================");
-        $this->line("Target User  : " . ($user->name ?? $user->email) . " (ID: {$user->id})");
+        $this->line("Target User  : " . \SalvatoreCervone\PermissionToolkit\PermissionToolkit::getUserDisplayName($user) . " (ID: {$user->id})");
         $this->line("User Roles   : " . implode(', ', method_exists($user, 'getRoleNames') ? $user->getRoleNames()->toArray() : ['N/A']));
         $this->line("Testing Ability : <comment>{$ability}</comment>");
         if ($teamId !== null) {

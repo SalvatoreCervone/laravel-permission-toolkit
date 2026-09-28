@@ -51,6 +51,35 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Users Display & Ordering Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Configure how users are displayed and sorted in the User Management list.
+    | Often applications have 'first_name' / 'last_name' or 'cognome' / 'nome'
+    | instead of just 'name'.
+    |
+    | - 'display_columns': Array of column / attribute names on the User model.
+    |   Multiple columns are concatenated with 'display_separator' (space by default).
+    |   Example: ['cognome', 'nome'] or ['name'] or ['last_name', 'first_name'].
+    |
+    | - 'display_separator': The string used to join display_columns (default: ' ').
+    |
+    | - 'order_by': Column(s) used for sorting users. If null (default), users are
+    |   automatically ordered by 'display_columns' in the order specified!
+    |   Active users are ALWAYS sorted before deactivated/trashed users.
+    |   Example: ['cognome' => 'asc', 'nome' => 'asc'] or null
+    |
+    */
+    'users' => [
+        'display_columns' => env('PERMISSION_TOOLKIT_USERS_DISPLAY_COLUMNS')
+            ? array_map('trim', explode(',', env('PERMISSION_TOOLKIT_USERS_DISPLAY_COLUMNS')))
+            : ['name'],
+        'display_separator' => ' ',
+        'order_by' => null,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Super Admin Configuration
     |--------------------------------------------------------------------------
     |

@@ -44,4 +44,65 @@ class PermissionToolkit
     {
         static::$authUsing = $callback;
     }
+
+    /**
+     * Get the configured column(s) used to display the user name/identifier.
+     *
+     * @return array<int, string>
+     */
+    public static function getUserDisplayColumns(): array
+    {
+        $columns = config('permission-toolkit.users.display_columns');
+
+        if (empty($columns)) {
+            return ['name'];
+        }
+
+        if (is_string($columns)) {
+            $columns = array_map('trim', explode(',', $columns));
+        }
+
+        $filtered = array_values(array_filter((array) $columns));
+
+        return ! empty($filtered) ? $filtered : ['name'];
+    }
+
+    /**
+     * Get the formatted display name for a given user model instance.
+     */
+    public static function getUserDisplayName(mixed $user): string
+    {
+        if (! $user) {
+            return '';
+        }
+
+        $columns = static::getUserDisplayColumns();
+        $parts = [];
+
+        foreach ($columns as $column) {
+            if (is_string($column)) {
+                $val = trim((string) ($user->{$column} ?? ''));
+                if ($val !== '') {
+                    $parts[] = $val;
+                }
+            }
+        }
+
+        if (! empty($parts)) {
+            $separator = (string) config('permission-toolkit.users.display_separator', ' ');
+            return implode($separator, $parts);
+        }
+
+        // Fallbacks
+        foreach (['name', 'email', 'username'] as $fallback) {
+            $val = trim((string) ($user->{$fallback} ?? ''));
+            if ($val !== '') {
+                return $val;
+            }
+        }
+
+        $key = method_exists($user, 'getKey') ? $user->getKey() : ($user->id ?? '');
+
+        return __('permission-toolkit::messages.users_th_user') . ($key !== '' ? " #{$key}" : '');
+    }
 }

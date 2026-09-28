@@ -5,6 +5,7 @@ namespace SalvatoreCervone\PermissionToolkit\Services;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Gate;
+use SalvatoreCervone\PermissionToolkit\PermissionToolkit;
 
 class AuthorizationSimulator
 {
@@ -36,7 +37,7 @@ class AuthorizationSimulator
             // Step 1: User Identity Verification
             $userClass = get_class($user);
             $userId = $user->getAuthIdentifier();
-            $userName = $user->name ?? $user->email ?? __('permission-toolkit::messages.sim_anonymous_user', ['id' => $userId]);
+            $userName = PermissionToolkit::getUserDisplayName($user);
 
         $identityDetail = __('permission-toolkit::messages.sim_step_detail_identity', [
             'class' => $userClass,
@@ -295,7 +296,7 @@ class AuthorizationSimulator
             'user' => [
                 'id' => $user->getAuthIdentifier(),
                 'class' => get_class($user),
-                'name' => $user->name ?? $user->email ?? 'User #' . $user->getAuthIdentifier(),
+                'name' => PermissionToolkit::getUserDisplayName($user),
                 'roles' => method_exists($user, 'getRoleNames') ? $user->getRoleNames()->toArray() : [],
             ],
             'steps' => $steps,
@@ -369,7 +370,7 @@ class AuthorizationSimulator
                         $authorizedUsers[] = [
                             'user' => [
                                 'id' => $user->getAuthIdentifier(),
-                                'name' => $user->name ?? $user->email ?? 'User #' . $user->getAuthIdentifier(),
+                                'name' => PermissionToolkit::getUserDisplayName($user),
                                 'email' => $user->email ?? 'N/D',
                                 'roles' => $userRoleNames,
                             ],
@@ -434,7 +435,7 @@ class AuthorizationSimulator
                         $authorizedUsers[] = [
                             'user' => [
                                 'id' => $user->getAuthIdentifier(),
-                                'name' => $user->name ?? $user->email ?? 'User #' . $user->getAuthIdentifier(),
+                                'name' => PermissionToolkit::getUserDisplayName($user),
                                 'email' => $user->email ?? 'N/D',
                                 'roles' => $userRoleNames,
                             ],

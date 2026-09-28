@@ -2,6 +2,60 @@
 
 @section('title', __('permission-toolkit::messages.users_title'))
 
+@push('styles')
+<style>
+    .user-status-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        min-width: 98px;
+        padding: 0.22rem 0.6rem;
+        border-radius: 9999px;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        box-sizing: border-box;
+        line-height: 1.25;
+    }
+    .status-active {
+        background: rgba(16, 185, 129, 0.12);
+        border: 1px solid rgba(16, 185, 129, 0.35);
+        color: #34d399;
+    }
+    .status-deactivated {
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.35);
+        color: #f87171;
+    }
+    .status-indicator-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .dot-active {
+        background-color: #10b981;
+        box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+    }
+    .dot-deactivated {
+        background-color: #ef4444;
+        box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+    }
+    [data-theme="light"] .status-active {
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+        color: #065f46;
+    }
+    [data-theme="light"] .status-deactivated {
+        background: #fef2f2;
+        border-color: #fecaca;
+        color: #991b1b;
+    }
+</style>
+@endpush
+
 @section('content')
 @if(session('status'))
     <div style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #6ee7b7; padding: 0.75rem 1.25rem; border-radius: 0.375rem; margin-bottom: 1.25rem; font-size: 0.9rem;">
@@ -118,9 +172,45 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 80px;">{{ __('permission-toolkit::messages.users_th_id') }}</th>
-                    <th>{{ __('permission-toolkit::messages.users_th_user') }}</th>
-                    <th>{{ __('permission-toolkit::messages.users_th_email') }}</th>
+                    <th style="width: 75px;">
+                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'id', 'direction' => (request('sort') === 'id' && request('direction', 'asc') === 'asc') ? 'desc' : 'asc']) }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;" title="{{ __('permission-toolkit::messages.btn_filter') }}">
+                            <span>{{ __('permission-toolkit::messages.users_th_id') }}</span>
+                            @if(request('sort') === 'id')
+                                <span style="font-size: 0.75rem; color: var(--primary);">{{ request('direction', 'asc') === 'desc' ? '▼' : '▲' }}</span>
+                            @endif
+                        </a>
+                    </th>
+                    @if($supportsSoftDeletes)
+                        <th style="width: 120px; text-align: center;">
+                            <a href="{{ request()->fullUrlWithQuery(['sort' => 'status', 'direction' => (request('sort') === 'status' && request('direction', 'asc') === 'asc') ? 'desc' : 'asc']) }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem;" title="{{ __('permission-toolkit::messages.btn_filter') }}">
+                                <span>{{ __('permission-toolkit::messages.users_th_status') }}</span>
+                                @if(request('sort') === 'status')
+                                    <span style="font-size: 0.75rem; color: var(--primary);">{{ request('direction', 'asc') === 'desc' ? '▼' : '▲' }}</span>
+                                @endif
+                            </a>
+                        </th>
+                    @endif
+                    <th>
+                        @php
+                            $isUserSorted = request('sort') === 'user' || (!request('sort') && !empty($displayColumns));
+                            $userDirection = request('sort') === 'user' ? request('direction', 'asc') : 'asc';
+                            $nextUserDirection = ($isUserSorted && $userDirection === 'asc') ? 'desc' : 'asc';
+                        @endphp
+                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'user', 'direction' => $nextUserDirection]) }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;" title="{{ __('permission-toolkit::messages.btn_filter') }}">
+                            <span>{{ __('permission-toolkit::messages.users_th_user') }}</span>
+                            @if($isUserSorted)
+                                <span style="font-size: 0.75rem; color: var(--primary);">{{ $userDirection === 'desc' ? '▼' : '▲' }}</span>
+                            @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'email', 'direction' => (request('sort') === 'email' && request('direction', 'asc') === 'asc') ? 'desc' : 'asc']) }}" style="color: inherit; text-decoration: none; display: inline-flex; align-items: center; gap: 0.35rem;" title="{{ __('permission-toolkit::messages.btn_filter') }}">
+                            <span>{{ __('permission-toolkit::messages.users_th_email') }}</span>
+                            @if(request('sort') === 'email')
+                                <span style="font-size: 0.75rem; color: var(--primary);">{{ request('direction', 'asc') === 'desc' ? '▼' : '▲' }}</span>
+                            @endif
+                        </a>
+                    </th>
                     <th>{{ __('permission-toolkit::messages.users_th_roles') }}</th>
                     <th style="text-align: center;">
                         @if($selectedPermission)
@@ -136,24 +226,29 @@
                 @forelse($users as $user)
                     @php
                         $isTrashed = $supportsSoftDeletes && method_exists($user, 'trashed') && $user->trashed();
+                        $displayName = \SalvatoreCervone\PermissionToolkit\PermissionToolkit::getUserDisplayName($user);
                     @endphp
                     <tr style="{{ $isTrashed ? 'opacity: 0.75; background: rgba(239, 68, 68, 0.04);' : '' }}">
                         <td style="color: var(--text-muted); font-weight: 500;">#{{ $user->id }}</td>
-                        <td style="font-weight: 600;">
-                            <span style="{{ $isTrashed ? 'text-decoration: line-through; color: var(--text-muted);' : '' }}">
-                                {{ $user->name ?? __('permission-toolkit::messages.users_th_user') . ' #' . $user->id }}
-                            </span>
-                            @if($supportsSoftDeletes)
+                        @if($supportsSoftDeletes)
+                            <td style="text-align: center;">
                                 @if($isTrashed)
-                                    <span class="badge badge-danger" style="margin-left: 0.4rem; font-size: 0.65rem;">
+                                    <span class="user-status-pill status-deactivated">
+                                        <span class="status-indicator-dot dot-deactivated"></span>
                                         {{ __('permission-toolkit::messages.users_status_deactivated') }}
                                     </span>
                                 @else
-                                    <span class="badge badge-success" style="margin-left: 0.4rem; font-size: 0.65rem;">
+                                    <span class="user-status-pill status-active">
+                                        <span class="status-indicator-dot dot-active"></span>
                                         {{ __('permission-toolkit::messages.users_status_active') }}
                                     </span>
                                 @endif
-                            @endif
+                            </td>
+                        @endif
+                        <td style="font-weight: 600;">
+                            <span style="{{ $isTrashed ? 'text-decoration: line-through; color: var(--text-muted);' : 'color: var(--text-main);' }}">
+                                {{ $displayName }}
+                            </span>
                         </td>
                         <td style="color: var(--text-muted); font-size: 0.85rem;">{{ $user->email ?? 'N/D' }}</td>
                         <td>
@@ -198,7 +293,7 @@
                             <div style="display: inline-flex; align-items: center; gap: 0.35rem; justify-content: center;">
                                 @if($isTrashed)
                                     <!-- Restore Form -->
-                                    <form method="POST" action="{{ route('permission-toolkit.users.restore', $user->id) }}" onsubmit="return confirm('{{ addslashes(__('permission-toolkit::messages.users_confirm_restore', ['name' => $user->name ?? $user->id])) }}');">
+                                    <form method="POST" action="{{ route('permission-toolkit.users.restore', $user->id) }}" onsubmit="return confirm('{{ addslashes(__('permission-toolkit::messages.users_confirm_restore', ['name' => $displayName])) }}');">
                                         @csrf
                                         <button type="submit" class="btn" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; background: #064e3b; color: #a7f3d0; border-color: #047857;">
                                             {{ __('permission-toolkit::messages.users_restore_btn') }}
@@ -206,7 +301,7 @@
                                     </form>
 
                                     <!-- Force Delete Form -->
-                                    <form method="POST" action="{{ route('permission-toolkit.users.force-delete', $user->id) }}" onsubmit="return confirm('{{ addslashes(__('permission-toolkit::messages.users_confirm_force_delete', ['name' => $user->name ?? $user->id])) }}');">
+                                    <form method="POST" action="{{ route('permission-toolkit.users.force-delete', $user->id) }}" onsubmit="return confirm('{{ addslashes(__('permission-toolkit::messages.users_confirm_force_delete', ['name' => $displayName])) }}');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; background: #7f1d1d; color: #fecaca; border-color: #991b1b;">
@@ -220,7 +315,7 @@
                                     </a>
 
                                     <!-- Deactivate / Delete Form -->
-                                    <form method="POST" action="{{ route('permission-toolkit.users.destroy', $user->id) }}" onsubmit="return confirm('{{ addslashes($supportsSoftDeletes ? __('permission-toolkit::messages.users_confirm_deactivate', ['name' => $user->name ?? $user->id]) : __('permission-toolkit::messages.users_confirm_delete', ['name' => $user->name ?? $user->id])) }}');">
+                                    <form method="POST" action="{{ route('permission-toolkit.users.destroy', $user->id) }}" onsubmit="return confirm('{{ addslashes($supportsSoftDeletes ? __('permission-toolkit::messages.users_confirm_deactivate', ['name' => $displayName]) : __('permission-toolkit::messages.users_confirm_delete', ['name' => $displayName])) }}');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; color: #ef4444; border-color: rgba(239, 68, 68, 0.4);" title="{{ $supportsSoftDeletes ? __('permission-toolkit::messages.users_deactivate_btn') : __('permission-toolkit::messages.users_delete_btn') }}">
@@ -233,7 +328,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
+                        <td colspan="{{ $supportsSoftDeletes ? 7 : 6 }}" style="text-align: center; color: var(--text-muted); padding: 2.5rem;">
                             {{ __('permission-toolkit::messages.users_empty') }}
                         </td>
                     </tr>

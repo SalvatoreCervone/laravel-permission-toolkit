@@ -85,6 +85,7 @@ return [
     'users_filter_active_perm' => 'Permission Filter: :name',
     'users_filter_active_status' => 'Status: :status',
     'users_th_id' => 'ID',
+    'users_th_status' => 'Status',
     'users_th_user' => 'User',
     'users_th_email' => 'Email',
     'users_th_roles' => 'Assigned Spatie Roles',

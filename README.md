@@ -177,7 +177,12 @@ https://your-app.test/permission-manager
   - **Bulk Actions**: One-click mass assignment (`✓`) and revocation (`✕`) per role across entire modules.
   - **Module Filter**: Group permissions by feature (`Users`, `Billing`, `Settings`) and filter quickly.
   - **1-Click Web Export & Import**: Download and upload role/permission JSON packages directly from the UI.
-- **Gestione Utenti**: `/permission-manager/users` (supporto per ID numerici, UUID e ULID, ricerca e reset password controllato)
+- **Gestione Utenti**: `/permission-manager/users`:
+  - **Priorità Utenti Attivi**: Mostra sempre prima tutti gli utenti attivi (`ATTIVO`), relegando gli utenti disattivati (`DISATTIVATO` / Soft Deleted) in fondo.
+  - **Colonne e Visualizzazione Configurabili**: Configura quali colonne mostrare al posto del solo `name` (es. `['cognome', 'nome']` o `['last_name', 'first_name']`) via `config('permission-toolkit.users.display_columns')`.
+  - **Ordinamento Automatico Multi-Colonna**: Se configurato con `['cognome', 'nome']`, la lista viene ordinata automaticamente per `cognome` e poi `nome` (mantenendo sempre gli attivi per primi), con supporto per header cliccabili e ordinamento custom (`order_by`).
+  - **Ricerca Intelligente**: Ricerca testuale dinamica su tutte le colonne configurate (`cognome`, `nome`, `name`, `email`, `username`, ID numerici o UUID).
+  - **Password & Accessi**: Gestione rapida permessi diretti, ruoli, e reset password con data scadenza.
 - **Diagnostic Simulator**: `/permission-manager/simulator` (test interattivo con supporto per Gate globali, Policy e Spatie Teams)
 - **Audit Trail**: `/permission-manager/audit-logs` (registro di conformità transazionale)
 - **Integrity Doctor**: `/permission-manager/doctor` (diagnostica senza query N+1)
