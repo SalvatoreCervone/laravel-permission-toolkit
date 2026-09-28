@@ -49,6 +49,9 @@ Route::group(['prefix' => $prefix, 'middleware' => $middleware, 'as' => 'permiss
     Route::get('/users/{id}', [UserController::class, 'edit'])->name('users.edit');
     Route::match(['post', 'put'], '/users/{id}', [UserController::class, 'update'])->name('users.update');
     Route::post('/users/{id}/password', [UserController::class, 'resetPassword'])->name('users.password');
+    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+    Route::post('/users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
+    Route::delete('/users/{id}/force', [UserController::class, 'forceDelete'])->name('users.force-delete');
 
     // Diagnostic Simulator
     Route::get('/simulator', [SimulatorController::class, 'index'])->name('simulator');

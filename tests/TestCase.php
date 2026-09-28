@@ -49,6 +49,7 @@ abstract class TestCase extends Orchestra
             $table->string('email')->unique();
             $table->string('password')->nullable();
             $table->dateTime('password_reset')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
 

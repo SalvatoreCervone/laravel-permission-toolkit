@@ -302,4 +302,169 @@ class AuthorizationSimulator
             'timestamp' => now()->toIso8601String(),
         ];
     }
+
+    /**
+     * Run a reverse diagnostic simulation: find which users have a specific permission or role,
+     * and trace the exact path granting access (direct, role inheritance, or super admin bypass).
+     */
+    public function reverseSimulate(string $target, string $type = 'permission', int|string|null $teamId = null): array
+    {
+        $userModelClass = config('permission-toolkit.user_model')
+            ?? config('auth.providers.users.model', 'App\\Models\\User');
+
+        if (! class_exists($userModelClass)) {
+            return [
+                'target' => $target,
+                'type' => $type,
+                'authorized_users' => [],
+                'stats' => ['total' => 0, 'direct' => 0, 'role' => 0, 'super_admin' => 0],
+            ];
+        }
+
+        $superAdminConfig = config('permission-toolkit.super_admin', []);
+        $superAdminEnabled = $superAdminConfig['enabled'] ?? true;
+        $superAdminRoles = (array) ($superAdminConfig['role_name'] ?? ['super-admin', 'Super Admin']);
+
+        // Handle Spatie Teams context if provided
+        $previousTeamId = null;
+        $registrar = null;
+        if ($teamId !== null && class_exists('Spatie\Permission\PermissionRegistrar')) {
+            $registrar = app('Spatie\Permission\PermissionRegistrar');
+            if (method_exists($registrar, 'getPermissionsTeamId')) {
+                $previousTeamId = $registrar->getPermissionsTeamId();
+                $registrar->setPermissionsTeamId($teamId);
+            }
+        }
+
+        try {
+            $allUsers = (new $userModelClass)->newQuery()->with(['roles', 'permissions'])->get();
+            $authorizedUsers = [];
+            $directCount = 0;
+            $roleCount = 0;
+            $superAdminCount = 0;
+
+            foreach ($allUsers as $user) {
+                $userRoleNames = method_exists($user, 'getRoleNames')
+                    ? $user->getRoleNames()->toArray()
+                    : ($user->roles ? $user->roles->pluck('name')->toArray() : []);
+
+                $hasSuperAdmin = false;
+                $matchingSuperAdmin = null;
+                if ($superAdminEnabled) {
+                    $matchingSuperAdmin = $this->findMatchingSuperAdminRole($user, $superAdminRoles, $userRoleNames);
+                    if ($matchingSuperAdmin !== null) {
+                        $hasSuperAdmin = true;
+                    }
+                }
+
+                if ($type === 'role') {
+                    $hasRole = in_array($target, $userRoleNames, true);
+                    if ($hasRole || $hasSuperAdmin) {
+                        if ($hasRole) {
+                            $roleCount++;
+                        }
+                        if ($hasSuperAdmin && ! $hasRole) {
+                            $superAdminCount++;
+                        }
+                        $authorizedUsers[] = [
+                            'user' => [
+                                'id' => $user->getAuthIdentifier(),
+                                'name' => $user->name ?? $user->email ?? 'User #' . $user->getAuthIdentifier(),
+                                'email' => $user->email ?? 'N/D',
+                                'roles' => $userRoleNames,
+                            ],
+                            'is_direct' => false,
+                            'grant_type' => $hasRole ? 'ROLE' : 'SUPER_ADMIN',
+                            'roles_granting' => $hasRole ? [$target] : [],
+                            'super_admin_bypass' => $hasSuperAdmin,
+                            'reason' => $hasRole
+                                ? __('permission-toolkit::messages.sim_reason_role', ['role' => $target])
+                                : __('permission-toolkit::messages.sim_reason_super_admin', ['role' => $matchingSuperAdmin]),
+                        ];
+                    }
+                } else {
+                    // Type is permission / ability
+                    $hasDirect = false;
+                    if ($user->permissions) {
+                        $hasDirect = $user->permissions->contains('name', $target) || $user->permissions->contains('id', $target);
+                    }
+
+                    $grantingRoles = [];
+                    if ($user->roles) {
+                        foreach ($user->roles as $role) {
+                            if (method_exists($role, 'hasPermissionTo') && $role->hasPermissionTo($target)) {
+                                $grantingRoles[] = $role->name;
+                            }
+                        }
+                    }
+
+                    $isAuthorized = $hasDirect || count($grantingRoles) > 0 || $hasSuperAdmin;
+
+                    if ($isAuthorized) {
+                        if ($hasDirect) {
+                            $directCount++;
+                        }
+                        if (count($grantingRoles) > 0) {
+                            $roleCount++;
+                        }
+                        if ($hasSuperAdmin && ! $hasDirect && empty($grantingRoles)) {
+                            $superAdminCount++;
+                        }
+
+                        $reasons = [];
+                        if ($hasSuperAdmin) {
+                            $reasons[] = __('permission-toolkit::messages.sim_step_super_admin') . " ({$matchingSuperAdmin})";
+                        }
+                        if ($hasDirect) {
+                            $reasons[] = __('permission-toolkit::messages.sim_step_direct_permission');
+                        }
+                        if (! empty($grantingRoles)) {
+                            $reasons[] = __('permission-toolkit::messages.sim_step_role_inheritance') . ' (' . implode(', ', $grantingRoles) . ')';
+                        }
+
+                        $grantType = 'ROLE';
+                        if ($hasDirect && ! empty($grantingRoles)) {
+                            $grantType = 'BOTH';
+                        } elseif ($hasDirect) {
+                            $grantType = 'DIRECT';
+                        } elseif ($hasSuperAdmin && empty($grantingRoles)) {
+                            $grantType = 'SUPER_ADMIN';
+                        }
+
+                        $authorizedUsers[] = [
+                            'user' => [
+                                'id' => $user->getAuthIdentifier(),
+                                'name' => $user->name ?? $user->email ?? 'User #' . $user->getAuthIdentifier(),
+                                'email' => $user->email ?? 'N/D',
+                                'roles' => $userRoleNames,
+                            ],
+                            'is_direct' => $hasDirect,
+                            'grant_type' => $grantType,
+                            'roles_granting' => $grantingRoles,
+                            'super_admin_bypass' => $hasSuperAdmin,
+                            'reason' => implode(' + ', $reasons),
+                        ];
+                    }
+                }
+            }
+
+            return [
+                'target' => $target,
+                'type' => $type,
+                'total_scanned' => $allUsers->count(),
+                'authorized_users' => $authorizedUsers,
+                'stats' => [
+                    'total' => count($authorizedUsers),
+                    'direct' => $directCount,
+                    'role' => $roleCount,
+                    'super_admin' => $superAdminCount,
+                ],
+                'timestamp' => now()->toIso8601String(),
+            ];
+        } finally {
+            if ($previousTeamId !== null && isset($registrar) && method_exists($registrar, 'setPermissionsTeamId')) {
+                $registrar->setPermissionsTeamId($previousTeamId);
+            }
+        }
+    }
 }

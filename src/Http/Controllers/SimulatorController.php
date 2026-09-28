@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use SalvatoreCervone\PermissionToolkit\Services\AuthorizationSimulator;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class SimulatorController extends Controller
 {
@@ -22,15 +23,23 @@ class SimulatorController extends Controller
             : collect();
 
         $permissions = Permission::orderBy('name')->get();
+        $roles = Role::orderBy('name')->get();
 
+        $mode = $request->get('mode', 'forward');
         $selectedUserId = $request->get('user_id');
         $selectedAbility = $request->get('ability');
         $modelClass = $request->get('model_class');
         $modelId = $request->get('model_id');
 
-        $simulationResult = null;
+        $reverseTarget = $request->get('reverse_target');
+        $reverseType = $request->get('reverse_type', 'permission');
 
-        if ($selectedUserId && $selectedAbility && class_exists($userModelClass)) {
+        $simulationResult = null;
+        $reverseResult = null;
+
+        if ($mode === 'reverse' && $reverseTarget) {
+            $reverseResult = $simulator->reverseSimulate($reverseTarget, $reverseType);
+        } elseif ($selectedUserId && $selectedAbility && class_exists($userModelClass)) {
             $user = (new $userModelClass)->newQuery()->find($selectedUserId);
 
             if ($user) {
@@ -46,11 +55,16 @@ class SimulatorController extends Controller
         return view('permission-toolkit::simulator.index', compact(
             'users',
             'permissions',
+            'roles',
+            'mode',
             'selectedUserId',
             'selectedAbility',
             'modelClass',
             'modelId',
-            'simulationResult'
+            'simulationResult',
+            'reverseTarget',
+            'reverseType',
+            'reverseResult'
         ));
     }
 }

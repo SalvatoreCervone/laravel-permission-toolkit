@@ -201,6 +201,9 @@
                                   style="font-size: 0.7rem; max-width: 110px; word-break: break-word; overflow-wrap: anywhere; line-height: 1.25; display: inline-block; white-space: normal;">
                                 {{ $role->name }}
                             </span>
+                            <a href="{{ route('permission-toolkit.users.index', ['role' => $role->name]) }}" 
+                               title="{{ __('permission-toolkit::messages.matrix_view_users_role') }}" 
+                               style="text-decoration: none; font-size: 0.75rem; color: var(--text-muted); padding: 0.1rem 0.2rem; cursor: pointer;">👥</a>
                             <button type="button" onclick="event.stopPropagation(); deleteRole({{ $role->id }}, '{{ addslashes($role->name) }}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.75rem;" title="{{ __('permission-toolkit::messages.matrix_delete_role_title') }}">✕</button>
                         </div>
                         <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.15rem;">{{ $role->guard_name }}</div>
@@ -243,7 +246,12 @@
                                 <strong>{{ $permission->name }}</strong>
                                 <span style="font-size: 0.7rem; color: var(--text-muted); margin-left: 0.4rem;">({{ $permission->guard_name }})</span>
                             </span>
-                            <button type="button" onclick="event.stopPropagation(); deletePermission({{ $permission->id }}, '{{ addslashes($permission->name) }}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.75rem; padding: 0.2rem;" title="{{ __('permission-toolkit::messages.matrix_delete_perm_title') }}">✕</button>
+                            <div style="display: inline-flex; align-items: center; gap: 0.25rem;">
+                                <a href="{{ route('permission-toolkit.users.index', ['permission' => $permission->name]) }}" 
+                                   title="{{ __('permission-toolkit::messages.matrix_view_users_perm') }}" 
+                                   style="text-decoration: none; font-size: 0.75rem; color: var(--text-muted); padding: 0.1rem 0.2rem; cursor: pointer;">👥</a>
+                                <button type="button" onclick="event.stopPropagation(); deletePermission({{ $permission->id }}, '{{ addslashes($permission->name) }}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.75rem; padding: 0.2rem;" title="{{ __('permission-toolkit::messages.matrix_delete_perm_title') }}">✕</button>
+                            </div>
                         </td>
                         @foreach($roles as $role)
                             @php

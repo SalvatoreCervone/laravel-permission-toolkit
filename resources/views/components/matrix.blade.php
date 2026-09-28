@@ -18,7 +18,10 @@
                     </th>
                     @foreach($roles as $role)
                         <th style="position: sticky; top: 0; z-index: 20; background: #1f2937; padding: 0.75rem 1rem; border-bottom: 2px solid var(--border, #374151); text-align: center; min-width: 130px;">
-                            <div style="font-weight: 600;">{{ $role->name }}</div>
+                            <div style="font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
+                                <span>{{ $role->name }}</span>
+                                <a href="{{ route('permission-toolkit.users.index', ['role' => $role->name]) }}" title="{{ __('permission-toolkit::messages.matrix_view_users_role') }}" style="text-decoration: none; font-size: 0.75rem; color: #9ca3af;">👥</a>
+                            </div>
                             <div style="font-size: 0.7rem; color: #9ca3af;">{{ $role->guard_name }}</div>
                         </th>
                     @endforeach
@@ -61,7 +64,10 @@
                     @foreach($modulePermissions as $permission)
                         <tr class="widget-perm-row" data-name="{{ strtolower($permission->name) }}">
                             <td style="position: sticky; left: 0; z-index: 10; background: #111827; padding: 0.6rem 1rem; border-bottom: 1px solid #1f2937; border-right: 2px solid var(--border, #374151); color: #e5e7eb;">
-                                <code>{{ $permission->name }}</code>
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+                                    <code>{{ $permission->name }}</code>
+                                    <a href="{{ route('permission-toolkit.users.index', ['permission' => $permission->name]) }}" title="{{ __('permission-toolkit::messages.matrix_view_users_perm') }}" style="text-decoration: none; font-size: 0.75rem; color: #9ca3af;">👥</a>
+                                </div>
                             </td>
                             @foreach($roles as $role)
                                 @php

@@ -26,12 +26,12 @@
 
 ## ✨ Features
 
-- 🔍 **AWS IAM-Style Diagnostic Simulator (`permission:simulate` & Web UI)**  
-  Simulate and trace step-by-step why an authorization passed or failed (User identity ➔ Super Admin bypass ➔ Direct permissions ➔ Role inheritance ➔ Laravel Policy check).
+- 🔍 **AWS IAM-Style Diagnostic Simulator & Reverse Lookup (`permission:simulate` & Web UI)**  
+  Simulate and trace step-by-step why an authorization passed or failed (User identity ➔ Super Admin bypass ➔ Direct permissions ➔ Role inheritance ➔ Laravel Policy check), or run a **Reverse Diagnostic Lookup** to inspect every user who possesses a specific role or permission and trace their exact access path.
 - 🔲 **Interactive Role-Permission Matrix (`/permission-manager/matrix`)**  
-  Spreadsheet-style pivot matrix with real-time AJAX toggling, inline role/permission creation & deletion, and automatic Spatie cache invalidation.
-- 👥 **User Access Management (`/permission-manager/users`)**  
-  List users with live search, inspect their assigned roles, and assign/revoke roles and direct permissions with one click.
+  Spreadsheet-style pivot matrix with real-time AJAX toggling, inline role/permission creation & deletion, 1-click deep links (`👥`) to authorized users, and automatic Spatie cache invalidation.
+- 👥 **User Access Management & SoftDeletes Lifecycle (`/permission-manager/users`)**  
+  List users with live search, filter by Role or Permission (with direct vs inherited indicators), filter by SoftDeletes status (Active vs Deactivated), and safely manage user deactivation, restoration, and force deletion with built-in self-protection guardrails.
 - 📜 **Security & Compliance Audit Trail (`/permission-manager/audit-logs`)**  
   Immutable activity log recording who created, deleted, assigned, or revoked roles and permissions with actor, target user, IP address, and timestamp.
 - 🩺 **Integrity Doctor (`permission:doctor` & `/permission-manager/doctor`)**  

@@ -28,7 +28,22 @@ class UserController extends Controller
             abort(500, "Configured user model [{$userModelClass}] does not exist.");
         }
 
+        $supportsSoftDeletes = in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($userModelClass));
+        $roles = Role::orderBy('name')->get();
+        $permissions = Permission::orderBy('name')->get();
+
         $query = (new $userModelClass)->newQuery()->with(['roles', 'permissions']);
+
+        $statusFilter = $request->get('status', 'all');
+        if ($supportsSoftDeletes) {
+            if ($statusFilter === 'trashed') {
+                $query->onlyTrashed();
+            } elseif ($statusFilter === 'active') {
+                // Default: active non-trashed models only
+            } else {
+                $query->withTrashed();
+            }
+        }
 
         if ($search = trim($request->get('search', ''))) {
             $query->where(function ($q) use ($search) {
@@ -57,9 +72,35 @@ class UserController extends Controller
             });
         }
 
+        $selectedRole = $request->get('role');
+        if ($selectedRole) {
+            $query->whereHas('roles', function ($q) use ($selectedRole) {
+                is_numeric($selectedRole) ? $q->where('id', $selectedRole) : $q->where('name', $selectedRole);
+            });
+        }
+
+        $selectedPermission = $request->get('permission');
+        if ($selectedPermission) {
+            $query->where(function ($q) use ($selectedPermission) {
+                $q->whereHas('permissions', function ($pq) use ($selectedPermission) {
+                    is_numeric($selectedPermission) ? $pq->where('id', $selectedPermission) : $pq->where('name', $selectedPermission);
+                })->orWhereHas('roles.permissions', function ($rq) use ($selectedPermission) {
+                    is_numeric($selectedPermission) ? $rq->where('id', $selectedPermission) : $rq->where('name', $selectedPermission);
+                });
+            });
+        }
+
         $users = $query->paginate(20)->withQueryString();
 
-        return view('permission-toolkit::users.index', compact('users'));
+        return view('permission-toolkit::users.index', compact(
+            'users',
+            'roles',
+            'permissions',
+            'supportsSoftDeletes',
+            'selectedRole',
+            'selectedPermission',
+            'statusFilter'
+        ));
     }
 
     /**
@@ -225,5 +266,132 @@ class UserController extends Controller
         return redirect()
             ->route('permission-toolkit.users.edit', $id)
             ->with('status', $msg);
+    }
+
+    /**
+     * Delete or deactivate the specified user.
+     */
+    public function destroy(Request $request, string|int $id)
+    {
+        $userModelClass = config('permission-toolkit.user_model')
+            ?? config('auth.providers.users.model', 'App\\Models\\User');
+
+        if (! class_exists($userModelClass)) {
+            abort(500, "Configured user model [{$userModelClass}] does not exist.");
+        }
+
+        if (auth()->check() && (string) auth()->id() === (string) $id) {
+            return back()->with('error', __('permission-toolkit::messages.cannot_delete_own_user'));
+        }
+
+        $supportsSoftDeletes = in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($userModelClass));
+        $query = (new $userModelClass)->newQuery();
+        if ($supportsSoftDeletes) {
+            $query->withTrashed();
+        }
+
+        $user = $query->findOrFail($id);
+
+        // Guardrail: Super Admin check
+        $superAdminConfig = config('permission-toolkit.super_admin', []);
+        $superAdminRoles = (array) ($superAdminConfig['role_name'] ?? ['super-admin', 'Super Admin']);
+        if (method_exists($user, 'hasAnyRole') && $user->hasAnyRole($superAdminRoles)) {
+            return back()->with('error', __('permission-toolkit::messages.cannot_delete_super_admin_user'));
+        }
+
+        $isSoftDelete = $supportsSoftDeletes && ! $user->trashed();
+
+        AuditLogger::log(
+            targetUser: $user,
+            action: $isSoftDelete ? 'deactivated' : 'deleted',
+            type: 'user',
+            targetName: "User: " . ($user->name ?? $user->email ?? "#{$user->id}"),
+            metadata: ['soft_delete' => $isSoftDelete]
+        );
+
+        $user->delete();
+
+        $msg = $isSoftDelete
+            ? __('permission-toolkit::messages.msg_user_deactivated', ['name' => $user->name ?? "#{$user->id}"])
+            : __('permission-toolkit::messages.msg_user_deleted', ['name' => $user->name ?? "#{$user->id}"]);
+
+        return redirect()->route('permission-toolkit.users.index')->with('status', $msg);
+    }
+
+    /**
+     * Restore a soft-deleted (deactivated) user.
+     */
+    public function restore(Request $request, string|int $id)
+    {
+        $userModelClass = config('permission-toolkit.user_model')
+            ?? config('auth.providers.users.model', 'App\\Models\\User');
+
+        $supportsSoftDeletes = in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($userModelClass));
+        if (! $supportsSoftDeletes) {
+            abort(404, "Soft deletes are not supported by the user model.");
+        }
+
+        $user = (new $userModelClass)->onlyTrashed()->findOrFail($id);
+
+        $user->restore();
+
+        AuditLogger::log(
+            targetUser: $user,
+            action: 'restored',
+            type: 'user',
+            targetName: "User: " . ($user->name ?? $user->email ?? "#{$user->id}")
+        );
+
+        return back()->with('status', __('permission-toolkit::messages.msg_user_restored', ['name' => $user->name ?? "#{$user->id}"]));
+    }
+
+    /**
+     * Permanently remove a user from the database.
+     */
+    public function forceDelete(Request $request, string|int $id)
+    {
+        $userModelClass = config('permission-toolkit.user_model')
+            ?? config('auth.providers.users.model', 'App\\Models\\User');
+
+        if (auth()->check() && (string) auth()->id() === (string) $id) {
+            return back()->with('error', __('permission-toolkit::messages.cannot_delete_own_user'));
+        }
+
+        $supportsSoftDeletes = in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($userModelClass));
+        $query = (new $userModelClass)->newQuery();
+        if ($supportsSoftDeletes) {
+            $query->withTrashed();
+        }
+
+        $user = $query->findOrFail($id);
+
+        // Guardrail: Super Admin check
+        $superAdminConfig = config('permission-toolkit.super_admin', []);
+        $superAdminRoles = (array) ($superAdminConfig['role_name'] ?? ['super-admin', 'Super Admin']);
+        if (method_exists($user, 'hasAnyRole') && $user->hasAnyRole($superAdminRoles)) {
+            return back()->with('error', __('permission-toolkit::messages.cannot_delete_super_admin_user'));
+        }
+
+        AuditLogger::log(
+            targetUser: $user,
+            action: 'force_deleted',
+            type: 'user',
+            targetName: "User: " . ($user->name ?? $user->email ?? "#{$user->id}")
+        );
+
+        if (method_exists($user, 'roles')) {
+            $user->roles()->detach();
+        }
+        if (method_exists($user, 'permissions')) {
+            $user->permissions()->detach();
+        }
+
+        if ($supportsSoftDeletes && method_exists($user, 'forceDelete')) {
+            $user->forceDelete();
+        } else {
+            $user->delete();
+        }
+
+        return redirect()->route('permission-toolkit.users.index')->with('status', __('permission-toolkit::messages.msg_user_force_deleted', ['name' => $user->name ?? "#{$user->id}"]));
     }
 }
