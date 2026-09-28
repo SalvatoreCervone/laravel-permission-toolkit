@@ -44,6 +44,21 @@ return [
     'matrix_toast_perm_filtered' => 'Filtered :count roles with permission [:perm]',
     'matrix_toast_role_filtered' => 'Filtered :count permissions for role [:role]',
 
+    // Bulk Toggle
+    'matrix_bulk_title_assign' => 'Assign all module permissions',
+    'matrix_bulk_title_revoke' => 'Revoke all module permissions',
+    'matrix_bulk_subtitle_assign' => 'All permissions of the selected module will be granted to this role.',
+    'matrix_bulk_subtitle_revoke' => 'All permissions of the selected module will be revoked from this role.',
+    'matrix_bulk_confirm_assign_btn' => 'Confirm Bulk Assignment',
+    'matrix_bulk_confirm_revoke_btn' => 'Confirm Bulk Revocation',
+    'matrix_bulk_undo_btn' => '↩ Undo Changes',
+    'matrix_bulk_undo_success' => 'Changes undone! Restored :count permissions to their previous state.',
+    'matrix_bulk_success_msg' => 'Updated :count permissions in module [:module] for [:role].',
+    'matrix_bulk_warning_note' => 'This operation will overwrite the current manual configuration. You can still undo it from the Toast notification.',
+    'matrix_bulk_stat_total' => 'Permissions in module:',
+    'matrix_bulk_stat_active' => 'Currently active:',
+    'matrix_bulk_stat_to_change' => 'Permissions to be modified:',
+
     // Matrix Modals
     'matrix_modal_role_title' => 'Create New Spatie Role',
     'matrix_modal_role_name' => 'Role Name',

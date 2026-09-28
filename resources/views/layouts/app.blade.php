@@ -381,6 +381,35 @@
             font-size: 0.875rem;
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
             animation: fadeIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            min-width: 260px;
+        }
+        .toast.toast-danger {
+            background: #7f1d1d;
+            border-color: #ef4444;
+        }
+        .toast.toast-success {
+            background: #064e3b;
+            border-color: #10b981;
+        }
+        .toast-undo-btn {
+            background: #ffffff;
+            color: #1e1b4b;
+            border: none;
+            border-radius: 0.25rem;
+            padding: 0.3rem 0.65rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            white-space: nowrap;
+        }
+        .toast-undo-btn:hover {
+            background: #e0e7ff;
+            transform: scale(1.03);
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -465,16 +494,32 @@
         }
         document.addEventListener('DOMContentLoaded', updateThemeIcon);
 
-        function showToast(message, type = 'info') {
+        function showToast(message, type = 'info', actionCallback = null, actionText = null) {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.innerText = message;
+            toast.className = 'toast' + (type === 'danger' ? ' toast-danger' : (type === 'success' ? ' toast-success' : ''));
+
+            const msgSpan = document.createElement('span');
+            msgSpan.innerText = message;
+            toast.appendChild(msgSpan);
+
+            if (typeof actionCallback === 'function' && actionText) {
+                const btn = document.createElement('button');
+                btn.className = 'toast-undo-btn';
+                btn.innerText = actionText;
+                btn.onclick = () => {
+                    actionCallback();
+                    toast.remove();
+                };
+                toast.appendChild(btn);
+            }
+
             container.appendChild(toast);
+            const timeout = actionCallback ? 14000 : 3500;
             setTimeout(() => {
                 toast.style.opacity = '0';
                 setTimeout(() => toast.remove(), 300);
-            }, 3000);
+            }, timeout);
         }
     </script>
     @stack('scripts')

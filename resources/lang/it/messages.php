@@ -44,6 +44,21 @@ return [
     'matrix_toast_perm_filtered' => 'Filtrati :count ruoli con permesso [:perm]',
     'matrix_toast_role_filtered' => 'Filtrati :count permessi per il ruolo [:role]',
 
+    // Bulk Toggle
+    'matrix_bulk_title_assign' => 'Assegna tutti i permessi del modulo',
+    'matrix_bulk_title_revoke' => 'Revoca tutti i permessi del modulo',
+    'matrix_bulk_subtitle_assign' => 'Verranno attivati tutti i permessi del modulo selezionato per questo ruolo.',
+    'matrix_bulk_subtitle_revoke' => 'Verranno disattivati tutti i permessi del modulo selezionato per questo ruolo.',
+    'matrix_bulk_confirm_assign_btn' => 'Conferma Assegnazione Massiva',
+    'matrix_bulk_confirm_revoke_btn' => 'Conferma Revoca Massiva',
+    'matrix_bulk_undo_btn' => '↩ Annulla Modifica (Undo)',
+    'matrix_bulk_undo_success' => 'Modifica annullata! Ripristinati :count permessi al loro stato precedente.',
+    'matrix_bulk_success_msg' => 'Aggiornati :count permessi nel modulo [:module] per [:role].',
+    'matrix_bulk_warning_note' => 'Questa operazione sovrascriverà l\'attuale configurazione manuale. Potrai comunque annullarla dalla notifica Toast.',
+    'matrix_bulk_stat_total' => 'Permessi nel modulo:',
+    'matrix_bulk_stat_active' => 'Attualmente attivi:',
+    'matrix_bulk_stat_to_change' => 'Permessi che verranno modificati:',
+
     // Matrix Modals
     'matrix_modal_role_title' => 'Crea Nuovo Ruolo Spatie',
     'matrix_modal_role_name' => 'Nome Ruolo',

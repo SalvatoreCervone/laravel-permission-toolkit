@@ -409,28 +409,10 @@
         <tbody>
             @forelse($groupedPermissions as $group => $perms)
                 <tr class="module-row" data-group-name="{{ strtolower($group) }}" style="background: rgba(79, 70, 229, 0.08);">
-                    <td class="module-header-sticky" style="padding: 0.4rem 1rem;">
+                    <td class="module-header-sticky" style="padding: 0.5rem 1rem;">
                         {{ __('permission-toolkit::messages.matrix_module_prefix', ['group' => $group, 'count' => count($perms)]) }}
                     </td>
-                    @foreach($roles as $role)
-                        @php $permIdsJson = json_encode($perms->pluck('id')->values()->all()); @endphp
-                        <td class="role-cell module-bulk-cell" data-role-id="{{ $role->id }}" style="text-align: center; background: rgba(79, 70, 229, 0.08); border-bottom: 1px solid var(--border); padding: 0.25rem;">
-                            <div style="display: inline-flex; gap: 0.3rem; align-items: center; justify-content: center;">
-                                <button type="button" 
-                                        onclick="bulkToggleRole({{ $role->id }}, {{ $permIdsJson }}, 'assign')" 
-                                        title="{{ __('permission-toolkit::messages.bulk_assign_tooltip', ['module' => $group, 'role' => $role->name]) }}"
-                                        style="background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #6ee7b7; border-radius: 3px; font-size: 0.65rem; padding: 0.15rem 0.4rem; cursor: pointer; line-height: 1;">
-                                    ✓
-                                </button>
-                                <button type="button" 
-                                        onclick="bulkToggleRole({{ $role->id }}, {{ $permIdsJson }}, 'revoke')" 
-                                        title="{{ __('permission-toolkit::messages.bulk_revoke_tooltip', ['module' => $group, 'role' => $role->name]) }}"
-                                        style="background: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; border-radius: 3px; font-size: 0.65rem; padding: 0.15rem 0.4rem; cursor: pointer; line-height: 1;">
-                                    ✕
-                                </button>
-                            </div>
-                        </td>
-                    @endforeach
+                    <td class="module-row-spacer" colspan="{{ count($roles) }}" style="background: rgba(79, 70, 229, 0.04); border-bottom: 1px solid var(--border);"></td>
                 </tr>
                 @foreach($perms as $permission)
                     <tr class="perm-row" data-perm-id="{{ $permission->id }}" data-perm-name="{{ strtolower($permission->name) }}" data-group-name="{{ strtolower($group) }}">
@@ -556,6 +538,7 @@
         </form>
     </div>
 </div>
+
 @endsection
 
 @push('scripts')
@@ -803,43 +786,6 @@
         .then(d => {
             if (d.success) location.reload();
             else showToast(d.message || "{{ __('permission-toolkit::messages.error') }}", 'danger');
-        });
-    }
-
-    function bulkToggleRole(roleId, permIds, action) {
-        if (!permIds || !permIds.length) return;
-
-        const actionText = action === 'assign' ? 'assegnare' : 'revocare';
-        if (!confirm(`Sei sicuro di voler ${actionText} tutti i permessi del modulo?`)) return;
-
-        fetch("{{ route('permission-toolkit.matrix.bulk-toggle') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-                role_id: roleId,
-                permission_ids: permIds,
-                action: action
-            })
-        })
-        .then(r => r.json())
-        .then(d => {
-            if (d.success) {
-                // Update corresponding checkboxes in DOM instantly
-                permIds.forEach(id => {
-                    const chk = document.querySelector(`.perm-toggle[data-role-id="${roleId}"][data-perm-id="${id}"]`);
-                    if (chk) chk.checked = (action === 'assign');
-                });
-                showToast(d.message || "Operazione completata con successo!");
-            } else {
-                showToast(d.message || "{{ __('permission-toolkit::messages.error') }}", 'danger');
-            }
-        })
-        .catch(err => {
-            showToast("{{ __('permission-toolkit::messages.server_error') }}", 'danger');
         });
     }
 
