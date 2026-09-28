@@ -30,6 +30,140 @@
         background: #4f46e5;
     }
 
+    /* Tabella a larghezza naturale con scroll orizzontale garantito */
+    #matrixTable {
+        width: max-content;
+        min-width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    /* Colonna permessi fissa */
+    .perm-col-header {
+        min-width: 320px;
+        width: 320px;
+        max-width: 380px;
+    }
+
+    /* Colonne ruoli con larghezza garantita */
+    .role-col-header,
+    .role-cell {
+        min-width: 145px;
+        width: 145px;
+        max-width: 165px;
+        text-align: center;
+        vertical-align: middle;
+    }
+
+    /* Role Header Mini-Card */
+    .role-header-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0.45rem;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 0.15rem 0;
+    }
+
+    .role-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 2.25rem;
+        padding: 0.35rem 0.5rem;
+        background: rgba(79, 70, 229, 0.12);
+        border: 1px solid rgba(99, 102, 241, 0.35);
+        color: #c7d2fe;
+        border-radius: 0.375rem;
+        font-size: 0.725rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        user-select: none;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+        text-decoration: none;
+        box-sizing: border-box;
+    }
+
+    .role-badge:hover {
+        background: rgba(79, 70, 229, 0.25);
+        border-color: #6366f1;
+        color: #ffffff;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+    }
+
+    .role-name-text {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.25;
+        max-height: 2.5em;
+        word-break: normal;
+        overflow-wrap: break-word;
+        text-align: center;
+    }
+
+    .role-meta-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 0 0.2rem;
+        box-sizing: border-box;
+    }
+
+    .guard-pill {
+        font-size: 0.65rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-muted);
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        padding: 0.1rem 0.4rem;
+        border-radius: 0.25rem;
+        line-height: 1.2;
+    }
+
+    .role-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .role-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.4rem;
+        height: 1.4rem;
+        border-radius: 0.25rem;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        padding: 0;
+    }
+
+    .role-action-btn:hover {
+        background: rgba(79, 70, 229, 0.2);
+        border-color: #6366f1;
+        color: #a5b4fc;
+    }
+
+    .role-action-btn.delete-btn:hover {
+        background: rgba(239, 68, 68, 0.2);
+        border-color: #ef4444;
+        color: #fca5a5;
+    }
+
     /* Riga di intestazione fissa in alto */
     #matrixTable thead th {
         position: sticky;
@@ -38,6 +172,7 @@
         background-color: var(--bg-header);
         border-bottom: 2px solid var(--border);
         box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        padding: 0.65rem 0.5rem;
     }
 
     /* Colonna permessi fissa a sinistra */
@@ -97,15 +232,6 @@
         background: rgba(99, 102, 241, 0.25);
         color: #c7d2fe;
     }
-    .role-filter-btn {
-        cursor: pointer;
-        transition: all 0.15s ease;
-        user-select: none;
-    }
-    .role-filter-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 0 10px rgba(99, 102, 241, 0.7);
-    }
 
     /* Evidenziazione Elementi Filtrati */
     .perm-row-selected td {
@@ -119,8 +245,55 @@
         background-color: #312e81 !important;
         box-shadow: inset 0 0 0 2px #6366f1;
     }
+    .role-col-selected .role-badge {
+        background: #4f46e5 !important;
+        color: #ffffff !important;
+        border-color: #818cf8 !important;
+        box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+    }
     td.role-cell-selected {
         background-color: rgba(99, 102, 241, 0.14) !important;
+    }
+
+    /* Supporto Tema Chiaro */
+    [data-theme="light"] .role-badge {
+        background: #eef2ff;
+        border-color: #c7d2fe;
+        color: #4338ca;
+    }
+    [data-theme="light"] .role-badge:hover {
+        background: #e0e7ff;
+        border-color: #6366f1;
+        color: #312e81;
+    }
+    [data-theme="light"] .guard-pill {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #64748b;
+    }
+    [data-theme="light"] .role-action-btn {
+        background: #f8fafc;
+        border-color: #cbd5e1;
+        color: #64748b;
+    }
+    [data-theme="light"] .role-action-btn:hover {
+        background: #eef2ff;
+        border-color: #6366f1;
+        color: #4338ca;
+    }
+    [data-theme="light"] .role-action-btn.delete-btn:hover {
+        background: #fee2e2;
+        border-color: #ef4444;
+        color: #dc2626;
+    }
+    [data-theme="light"] .role-col-selected {
+        background-color: #e0e7ff !important;
+        box-shadow: inset 0 0 0 2px #4f46e5;
+    }
+    [data-theme="light"] .role-col-selected .role-badge {
+        background: #4f46e5 !important;
+        color: #ffffff !important;
+        border-color: #4338ca !important;
     }
 </style>
 @endpush
@@ -189,24 +362,46 @@
     <table id="matrixTable">
         <thead>
             <tr>
-                <th style="min-width: 320px; width: 320px;">
-                    {{ __('permission-toolkit::messages.matrix_th_module_perm') }}
+                <th class="perm-col-header" style="min-width: 320px; width: 320px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.25rem 0;">
+                        <span style="font-weight: 700; letter-spacing: 0.06em; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">
+                            {{ __('permission-toolkit::messages.matrix_th_module_perm') }}
+                        </span>
+                    </div>
                 </th>
                 @foreach($roles as $role)
-                    <th class="role-col-header" data-role-id="{{ $role->id }}" style="text-align: center; min-width: 130px; width: 130px;">
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 0.35rem;">
-                            <span class="badge badge-info role-filter-btn" 
-                                  onclick="filterByRole({{ $role->id }}, '{{ addslashes($role->name) }}')"
-                                  title="{{ __('permission-toolkit::messages.matrix_role_filter_tooltip') }}"
-                                  style="font-size: 0.7rem; max-width: 110px; word-break: break-word; overflow-wrap: anywhere; line-height: 1.25; display: inline-block; white-space: normal;">
-                                {{ $role->name }}
-                            </span>
-                            <a href="{{ route('permission-toolkit.users.index', ['role' => $role->name]) }}" 
-                               title="{{ __('permission-toolkit::messages.matrix_view_users_role') }}" 
-                               style="text-decoration: none; font-size: 0.75rem; color: var(--text-muted); padding: 0.1rem 0.2rem; cursor: pointer;">👥</a>
-                            <button type="button" onclick="event.stopPropagation(); deleteRole({{ $role->id }}, '{{ addslashes($role->name) }}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.75rem;" title="{{ __('permission-toolkit::messages.matrix_delete_role_title') }}">✕</button>
+                    <th class="role-col-header" data-role-id="{{ $role->id }}" style="text-align: center; min-width: 145px; width: 145px;">
+                        <div class="role-header-card">
+                            <div class="role-badge role-filter-btn" 
+                                 onclick="filterByRole({{ $role->id }}, '{{ addslashes($role->name) }}')"
+                                 title="{{ $role->name }} ({{ __('permission-toolkit::messages.matrix_role_filter_tooltip') }})">
+                                <span class="role-name-text">{!! str_replace('_', '_<wbr>', e($role->name)) !!}</span>
+                            </div>
+                            <div class="role-meta-bar">
+                                <span class="guard-pill" title="Guard: {{ $role->guard_name }}">{{ $role->guard_name }}</span>
+                                <div class="role-actions">
+                                    <a href="{{ route('permission-toolkit.users.index', ['role' => $role->name]) }}" 
+                                       class="role-action-btn"
+                                       title="{{ __('permission-toolkit::messages.matrix_view_users_role') }}">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="9" cy="7" r="4"></circle>
+                                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                        </svg>
+                                    </a>
+                                    <button type="button" 
+                                            class="role-action-btn delete-btn"
+                                            onclick="event.stopPropagation(); deleteRole({{ $role->id }}, '{{ addslashes($role->name) }}')" 
+                                            title="{{ __('permission-toolkit::messages.matrix_delete_role_title') }}">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div style="font-size: 0.65rem; color: var(--text-muted); margin-top: 0.15rem;">{{ $role->guard_name }}</div>
                     </th>
                 @endforeach
             </tr>
@@ -246,18 +441,33 @@
                                 <strong>{{ $permission->name }}</strong>
                                 <span style="font-size: 0.7rem; color: var(--text-muted); margin-left: 0.4rem;">({{ $permission->guard_name }})</span>
                             </span>
-                            <div style="display: inline-flex; align-items: center; gap: 0.25rem;">
+                            <div style="display: inline-flex; align-items: center; gap: 0.3rem;">
                                 <a href="{{ route('permission-toolkit.users.index', ['permission' => $permission->name]) }}" 
-                                   title="{{ __('permission-toolkit::messages.matrix_view_users_perm') }}" 
-                                   style="text-decoration: none; font-size: 0.75rem; color: var(--text-muted); padding: 0.1rem 0.2rem; cursor: pointer;">👥</a>
-                                <button type="button" onclick="event.stopPropagation(); deletePermission({{ $permission->id }}, '{{ addslashes($permission->name) }}')" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 0.75rem; padding: 0.2rem;" title="{{ __('permission-toolkit::messages.matrix_delete_perm_title') }}">✕</button>
+                                   class="role-action-btn"
+                                   title="{{ __('permission-toolkit::messages.matrix_view_users_perm') }}">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                    </svg>
+                                </a>
+                                <button type="button" 
+                                        class="role-action-btn delete-btn"
+                                        onclick="event.stopPropagation(); deletePermission({{ $permission->id }}, '{{ addslashes($permission->name) }}')" 
+                                        title="{{ __('permission-toolkit::messages.matrix_delete_perm_title') }}">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                                    </svg>
+                                </button>
                             </div>
                         </td>
                         @foreach($roles as $role)
                             @php
                                 $hasPerm = $role->hasPermissionTo($permission->name);
                             @endphp
-                            <td class="role-cell" data-role-id="{{ $role->id }}" data-has-perm="{{ $hasPerm ? '1' : '0' }}" style="text-align: center; min-width: 130px;">
+                            <td class="role-cell" data-role-id="{{ $role->id }}" data-has-perm="{{ $hasPerm ? '1' : '0' }}" style="text-align: center; min-width: 145px; width: 145px;">
                                 <input 
                                     type="checkbox" 
                                     class="perm-toggle" 
