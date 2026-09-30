@@ -232,8 +232,12 @@
                     <select name="user_id" class="input-control" required>
                         <option value="">{{ __('permission-toolkit::messages.sim_user_placeholder') }}</option>
                         @foreach($users as $u)
-                            <option value="{{ $u->id }}" {{ $selectedUserId == $u->id ? 'selected' : '' }}>
-                                {{ $u->name ?? $u->email }} (ID: {{ $u->id }})
+                            @php
+                                $uDisplayName = \SalvatoreCervone\PermissionToolkit\PermissionToolkit::getUserDisplayName($u);
+                                $uKey = method_exists($u, 'getKey') ? $u->getKey() : ($u->id ?? '');
+                            @endphp
+                            <option value="{{ $uKey }}" {{ (string) $selectedUserId === (string) $uKey ? 'selected' : '' }}>
+                                {{ $uDisplayName }} (ID: {{ $uKey }})
                             </option>
                         @endforeach
                     </select>

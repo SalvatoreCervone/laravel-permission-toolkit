@@ -66,6 +66,7 @@
                             value="{{ $role->id }}" 
                             {{ $isAssigned ? 'checked' : '' }}
                             style="width: 1.15rem; height: 1.15rem; accent-color: var(--primary); flex-shrink: 0;"
+                            onchange="this.closest('.item-card').classList.toggle('is-assigned', this.checked); if (typeof updateInheritedPermissions === 'function') updateInheritedPermissions();"
                         >
                         <div style="min-width: 0; flex: 1;">
                             <div style="font-weight: 600; font-size: 0.9rem; word-break: break-word; overflow-wrap: anywhere; line-height: 1.3;" title="{{ $role->name }}">{{ $role->name }}</div>
@@ -94,18 +95,37 @@
                     <div style="font-weight: 700; color: var(--accent-heading); text-transform: uppercase; font-size: 0.75rem; margin-bottom: 0.5rem; letter-spacing: 0.05em;">
                         📂 {{ $group }} ({{ count($perms) }})
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 0.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0.5rem;">
                         @foreach($perms as $permission)
-                            @php $isDirect = in_array($permission->id, $userPermissionIds); @endphp
-                            <label class="item-card {{ $isDirect ? 'is-assigned' : '' }}" style="padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-size: 0.85rem;">
+                            @php
+                                $isDirect = in_array($permission->id, $userPermissionIds);
+                                $rolesGranting = $inheritedPermissions[$permission->id] ?? [];
+                                $isInherited = !empty($rolesGranting);
+                            @endphp
+                            <label 
+                                id="perm-card-{{ $permission->id }}"
+                                class="item-card {{ $isDirect ? 'is-assigned' : '' }} {{ $isInherited ? 'is-inherited' : '' }}" 
+                                style="padding: 0.55rem 0.75rem; border-radius: 0.375rem; font-size: 0.85rem; align-items: flex-start;"
+                                data-permission-id="{{ $permission->id }}"
+                            >
                                 <input 
                                     type="checkbox" 
                                     name="permissions[]" 
                                     value="{{ $permission->id }}" 
                                     {{ $isDirect ? 'checked' : '' }}
-                                    style="accent-color: var(--primary); flex-shrink: 0;"
+                                    style="accent-color: var(--primary); flex-shrink: 0; margin-top: 0.15rem;"
+                                    onchange="this.closest('.item-card').classList.toggle('is-assigned', this.checked)"
                                 >
-                                <span style="font-family: monospace; min-width: 0; flex: 1; word-break: break-word; overflow-wrap: anywhere; line-height: 1.3;" title="{{ $permission->name }}">{{ $permission->name }}</span>
+                                <div style="min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 0.25rem;">
+                                    <span style="font-family: monospace; word-break: break-word; overflow-wrap: anywhere; line-height: 1.3;" title="{{ $permission->name }}">
+                                        {{ $permission->name }}
+                                    </span>
+                                    <div class="inherited-badge-container" style="{{ $isInherited ? '' : 'display: none;' }}">
+                                        <span class="badge badge-warning" style="font-size: 0.68rem; padding: 0.1rem 0.4rem; font-weight: 500; display: inline-flex; align-items: center; gap: 0.25rem; line-height: 1.2;">
+                                            🛡️ <span class="inherited-text">{{ __('permission-toolkit::messages.user_edit_inherited_from', ['roles' => implode(', ', array_unique($rolesGranting))]) }}</span>
+                                        </span>
+                                    </div>
+                                </div>
                             </label>
                         @endforeach
                     </div>
@@ -406,6 +426,45 @@
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const day = String(d.getDate()).padStart(2, '0');
         document.getElementById('modal_date_value').value = year + '-' + month + '-' + day + 'T00:00';
+    }
+
+    const rolePermissionsMap = @json($rolePermissionsMap ?? []);
+    const inheritedTemplate = @json(__('permission-toolkit::messages.user_edit_inherited_from', ['roles' => '__ROLES__']));
+
+    function updateInheritedPermissions() {
+        const roleCheckboxes = document.querySelectorAll('input[name="roles[]"]:checked');
+        const inherited = {};
+
+        roleCheckboxes.forEach(cb => {
+            const roleData = rolePermissionsMap[cb.value];
+            if (roleData && roleData.permissions) {
+                roleData.permissions.forEach(permId => {
+                    if (!inherited[permId]) {
+                        inherited[permId] = [];
+                    }
+                    if (!inherited[permId].includes(roleData.name)) {
+                        inherited[permId].push(roleData.name);
+                    }
+                });
+            }
+        });
+
+        document.querySelectorAll('.item-card[data-permission-id]').forEach(card => {
+            const permId = card.getAttribute('data-permission-id');
+            const badgeContainer = card.querySelector('.inherited-badge-container');
+            const textSpan = card.querySelector('.inherited-text');
+
+            if (inherited[permId] && inherited[permId].length > 0) {
+                card.classList.add('is-inherited');
+                if (badgeContainer) badgeContainer.style.display = '';
+                if (textSpan) {
+                    textSpan.textContent = inheritedTemplate.replace('__ROLES__', inherited[permId].join(', '));
+                }
+            } else {
+                card.classList.remove('is-inherited');
+                if (badgeContainer) badgeContainer.style.display = 'none';
+            }
+        });
     }
 </script>
 @endpush

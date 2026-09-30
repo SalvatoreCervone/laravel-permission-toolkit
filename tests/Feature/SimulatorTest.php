@@ -83,4 +83,52 @@ class SimulatorTest extends TestCase
         $this->assertTrue($result['is_allowed']);
         $this->assertStringContainsString('Super Admin', $result['reason']);
     }
+
+    /** @test */
+    public function it_loads_all_users_without_truncating_at_50_in_simulator_dropdown()
+    {
+        $admin = User::create(['name' => 'Admin User', 'email' => 'admin@example.com']);
+
+        // Create 60 users to exceed previous limit of 50
+        for ($i = 1; $i <= 60; $i++) {
+            User::create([
+                'name' => "User Number {$i}",
+                'email' => "user{$i}@example.com",
+            ]);
+        }
+
+        $response = $this->actingAs($admin)->get('/permission-manager/simulator');
+
+        $response->assertStatus(200);
+        $response->assertSee('User Number 1');
+        $response->assertSee('User Number 50');
+        $response->assertSee('User Number 55');
+        $response->assertSee('User Number 60');
+    }
+
+    /** @test */
+    public function it_guarantees_selected_user_is_in_dropdown_even_with_configured_limit()
+    {
+        $admin = User::create(['name' => 'Admin User', 'email' => 'admin@example.com']);
+
+        for ($i = 1; $i <= 15; $i++) {
+            User::create([
+                'name' => "Batch User {$i}",
+                'email' => "batch{$i}@example.com",
+            ]);
+        }
+
+        $targetUser = User::create([
+            'name' => 'Target Special User',
+            'email' => 'target@example.com',
+        ]);
+
+        config()->set('permission-toolkit.simulator.users_limit', 5);
+
+        $response = $this->actingAs($admin)->get("/permission-manager/simulator?user_id={$targetUser->id}");
+
+        $response->assertStatus(200);
+        $response->assertSee('Target Special User');
+        $response->assertSee("value=\"{$targetUser->id}\" selected", false);
+    }
 }

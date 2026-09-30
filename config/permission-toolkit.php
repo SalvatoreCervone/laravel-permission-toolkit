@@ -144,6 +144,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Diagnostic Simulator
+    |--------------------------------------------------------------------------
+    |
+    | Configuration options for the diagnostic authorization simulator.
+    | 'users_limit': Maximum number of users to load in the forward simulator
+    | dropdown. By default is null (all users are loaded without truncation).
+    |
+    */
+    'simulator' => [
+        'users_limit' => env('PERMISSION_TOOLKIT_SIMULATOR_USERS_LIMIT', null),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Integrity Doctor
     |--------------------------------------------------------------------------
     |

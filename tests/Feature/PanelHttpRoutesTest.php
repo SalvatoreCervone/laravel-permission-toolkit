@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Hash;
 use SalvatoreCervone\PermissionToolkit\Models\PermissionAuditLog;
 use SalvatoreCervone\PermissionToolkit\Tests\TestCase;
 use SalvatoreCervone\PermissionToolkit\Tests\User;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 
 class PanelHttpRoutesTest extends TestCase
 {
@@ -58,6 +60,22 @@ class PanelHttpRoutesTest extends TestCase
         $response->assertSee('Reset Password');
         $response->assertSee('passwordModal');
         $response->assertSee('password_confirmation');
+    }
+
+    /** @test */
+    public function it_marks_inherited_permissions_in_yellow_with_inherited_from_role_label()
+    {
+        $role = Role::create(['name' => 'EditorRole', 'guard_name' => 'web']);
+        $permission = Permission::create(['name' => 'articles.publish', 'guard_name' => 'web']);
+        $role->givePermissionTo($permission);
+
+        $this->user->assignRole($role);
+
+        $response = $this->actingAs($this->user)->get("/permission-manager/users/{$this->user->id}");
+
+        $response->assertStatus(200);
+        $response->assertSee('is-inherited');
+        $response->assertSee('ereditato da: EditorRole');
     }
 
     /** @test */

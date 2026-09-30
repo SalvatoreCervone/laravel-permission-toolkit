@@ -184,8 +184,13 @@ class UserController extends Controller
         $userModelClass = config('permission-toolkit.user_model')
             ?? config('auth.providers.users.model', 'App\\Models\\User');
 
-        $user = (new $userModelClass)->newQuery()->with(['roles', 'permissions'])->findOrFail($id);
-        $roles = Role::orderBy('name')->get();
+        $userQuery = (new $userModelClass)->newQuery()->with(['roles.permissions', 'permissions']);
+        if (in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($userModelClass))) {
+            $userQuery->withTrashed();
+        }
+        $user = $userQuery->findOrFail($id);
+
+        $roles = Role::with('permissions')->orderBy('name')->get();
         $permissions = Permission::orderBy('name')->get();
 
         $separator = config('permission-toolkit.matrix.group_separator', '.');
@@ -199,6 +204,23 @@ class UserController extends Controller
         $userRoleIds = $user->roles->pluck('id')->toArray();
         $userPermissionIds = $user->permissions->pluck('id')->toArray();
 
+        // Calculate inherited permissions from user's current roles
+        $inheritedPermissions = [];
+        foreach ($user->roles as $role) {
+            foreach ($role->permissions as $perm) {
+                $inheritedPermissions[$perm->id][] = $role->name;
+            }
+        }
+
+        // Map for dynamic real-time role toggle in JS
+        $rolePermissionsMap = [];
+        foreach ($roles as $role) {
+            $rolePermissionsMap[$role->id] = [
+                'name' => $role->name,
+                'permissions' => $role->permissions->pluck('id')->toArray(),
+            ];
+        }
+
         $defaultDateField = config('permission-toolkit.password_reset.date_field', null);
         $passwordResetEnabled = config('permission-toolkit.password_reset.enabled', true);
 
@@ -208,6 +230,8 @@ class UserController extends Controller
             'groupedPermissions',
             'userRoleIds',
             'userPermissionIds',
+            'inheritedPermissions',
+            'rolePermissionsMap',
             'defaultDateField',
             'passwordResetEnabled'
         ));

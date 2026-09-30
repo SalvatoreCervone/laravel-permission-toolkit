@@ -124,6 +124,8 @@ return [
     'user_edit_no_roles' => 'Nessun ruolo presente nel database.',
     'user_edit_sec2_title' => '2. Permessi Diretti (Opzionali)',
     'user_edit_sec2_subtitle' => 'Permessi specifici assegnati direttamente all\'utente (al di fuori di quelli ereditati dai ruoli).',
+    'user_edit_inherited_from' => 'ereditato da: :roles',
+    'user_edit_inherited_from_prefix' => 'ereditato da:',
     'user_edit_btn_save' => '💾 Salva Ruoli & Permessi',
     'user_pwd_modal_title' => '🔑 Reimposta Password Utente',
     'user_pwd_modal_user' => 'Utente: :name',
