@@ -162,6 +162,8 @@ class UserController extends Controller
 
         $users = $query->paginate(20)->withQueryString();
 
+        $userCreationEnabled = (bool) config('permission-toolkit.user_creation.enabled', false);
+
         return view('permission-toolkit::users.index', compact(
             'users',
             'roles',
@@ -172,8 +174,215 @@ class UserController extends Controller
             'statusFilter',
             'displayColumns',
             'sortParam',
-            'directionParam'
+            'directionParam',
+            'userCreationEnabled'
         ));
+    }
+
+    /**
+     * Show form for creating a new user.
+     */
+    public function create()
+    {
+        if (! config('permission-toolkit.user_creation.enabled', false)) {
+            abort(403, __('permission-toolkit::messages.user_create_disabled'));
+        }
+
+        $roles = Role::with('permissions')->orderBy('name')->get();
+        $fields = $this->getUserCreationFields();
+        $requirePassword = (bool) config('permission-toolkit.user_creation.require_password', true);
+        $assignRoles = (bool) config('permission-toolkit.user_creation.assign_roles', true);
+
+        return view('permission-toolkit::users.create', compact(
+            'roles',
+            'fields',
+            'requirePassword',
+            'assignRoles'
+        ));
+    }
+
+    /**
+     * Store a newly created user in storage.
+     */
+    public function store(Request $request, PermissionRegistrar $registrar)
+    {
+        if (! config('permission-toolkit.user_creation.enabled', false)) {
+            abort(403, __('permission-toolkit::messages.user_create_disabled'));
+        }
+
+        $userModelClass = config('permission-toolkit.user_model')
+            ?? config('auth.providers.users.model', 'App\\Models\\User');
+
+        if (! class_exists($userModelClass)) {
+            abort(500, "Configured user model [{$userModelClass}] does not exist.");
+        }
+
+        $userInstance = new $userModelClass;
+        $table = $userInstance->getTable();
+
+        $fields = $this->getUserCreationFields();
+        $rules = [];
+
+        foreach ($fields as $fieldName => $fieldConfig) {
+            $fieldRules = $fieldConfig['rules'] ?? ['nullable'];
+            if (is_string($fieldRules)) {
+                $fieldRules = explode('|', $fieldRules);
+            }
+
+            // Protect email uniqueness if not explicitly declared in custom rules
+            if ($fieldName === 'email') {
+                $hasUnique = false;
+                foreach ($fieldRules as $r) {
+                    if (is_string($r) && str_starts_with($r, 'unique')) {
+                        $hasUnique = true;
+                        break;
+                    }
+                }
+                if (! $hasUnique) {
+                    $fieldRules[] = "unique:{$table},email";
+                }
+            }
+
+            $rules[$fieldName] = $fieldRules;
+        }
+
+        $requirePassword = (bool) config('permission-toolkit.user_creation.require_password', true);
+        if ($requirePassword) {
+            $rules['password'] = ['required', 'string', 'min:6'];
+        }
+
+        $assignRoles = (bool) config('permission-toolkit.user_creation.assign_roles', true);
+        if ($assignRoles) {
+            $rules['roles'] = ['nullable', 'array'];
+        }
+
+        $validated = $request->validate($rules);
+
+        $customAction = config('permission-toolkit.user_creation.action');
+
+        $user = DB::transaction(function () use ($userModelClass, $fields, $validated, $requirePassword, $assignRoles, $request, $customAction, $registrar) {
+            $userAttributes = [];
+            foreach ($fields as $fieldName => $fieldConfig) {
+                if (array_key_exists($fieldName, $validated)) {
+                    $userAttributes[$fieldName] = $validated[$fieldName];
+                }
+            }
+
+            if ($requirePassword && ! empty($validated['password'])) {
+                $userAttributes['password'] = Hash::make($validated['password']);
+            }
+
+            if ($customAction) {
+                $actionObj = is_string($customAction) ? app($customAction) : $customAction;
+                if (is_callable($actionObj)) {
+                    $user = $actionObj($userAttributes, $request);
+                } elseif (method_exists($actionObj, 'execute')) {
+                    $user = $actionObj->execute($userAttributes, $request);
+                } elseif (method_exists($actionObj, 'create')) {
+                    $user = $actionObj->create($userAttributes, $request);
+                } else {
+                    abort(500, "Configured user_creation action does not implement execute, create, or __invoke.");
+                }
+            } else {
+                $user = new $userModelClass;
+                $user->forceFill($userAttributes);
+                $user->save();
+            }
+
+            // Assign Spatie roles
+            $assignedRoleNames = [];
+            if ($assignRoles && ! empty($validated['roles']) && method_exists($user, 'syncRoles')) {
+                $selectedRoleInputs = (array) $validated['roles'];
+                $roles = Role::where(function ($q) use ($selectedRoleInputs) {
+                    $q->whereIn('id', $selectedRoleInputs)->orWhereIn('name', $selectedRoleInputs);
+                })->get();
+
+                $user->syncRoles($roles);
+                $assignedRoleNames = $roles->pluck('name')->toArray();
+                $registrar->forgetCachedPermissions();
+            }
+
+            // Audit Trail
+            $displayName = PermissionToolkit::getUserDisplayName($user);
+            AuditLogger::log(
+                targetUser: $user,
+                action: 'created',
+                type: 'user',
+                targetName: "User: " . ($displayName ?: "#{$user->id}"),
+                metadata: [
+                    'assigned_roles' => $assignedRoleNames,
+                    'created_by' => auth()->user()?->getAuthIdentifier(),
+                ]
+            );
+
+            foreach ($assignedRoleNames as $roleName) {
+                AuditLogger::log(
+                    targetUser: $user,
+                    action: 'assigned',
+                    type: 'role',
+                    targetName: $roleName,
+                    metadata: ['initial_creation' => true]
+                );
+            }
+
+            // Dispatch Event
+            event(new UserAccessUpdated(
+                user: $user,
+                addedRoles: $assignedRoleNames,
+                removedRoles: [],
+                addedPermissions: [],
+                removedPermissions: [],
+                causer: auth()->user() ? [
+                    'id' => auth()->user()->getAuthIdentifier(),
+                    'type' => get_class(auth()->user()),
+                    'name' => PermissionToolkit::getUserDisplayName(auth()->user()),
+                ] : null
+            ));
+
+            return $user;
+        });
+
+        $displayName = PermissionToolkit::getUserDisplayName($user);
+
+        return redirect()->route('permission-toolkit.users.index')
+            ->with('status', __('permission-toolkit::messages.msg_user_created', ['name' => $displayName ?: "#{$user->id}"]));
+    }
+
+    /**
+     * Get the configured user creation fields.
+     *
+     * @return array<string, array>
+     */
+    protected function getUserCreationFields(): array
+    {
+        $fields = config('permission-toolkit.user_creation.fields');
+
+        if (is_array($fields) && ! empty($fields)) {
+            return $fields;
+        }
+
+        $displayCols = PermissionToolkit::getUserDisplayColumns();
+        $defaultFields = [];
+
+        foreach ($displayCols as $col) {
+            $defaultFields[$col] = [
+                'label' => ucwords(str_replace(['_', '-'], ' ', $col)),
+                'type' => 'text',
+                'rules' => ['required', 'string', 'max:255'],
+                'placeholder' => '',
+            ];
+        }
+
+        if (! isset($defaultFields['email'])) {
+            $defaultFields['email'] = [
+                'label' => 'Email',
+                'type' => 'email',
+                'rules' => ['required', 'email', 'max:255'],
+                'placeholder' => 'user@example.com',
+            ];
+        }
+
+        return $defaultFields;
     }
 
     /**

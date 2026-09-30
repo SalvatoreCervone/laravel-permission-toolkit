@@ -80,6 +80,31 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | User Creation (Optional & Standalone)
+    |--------------------------------------------------------------------------
+    |
+    | Enables an intuitive user creation interface directly within the toolkit.
+    | Disabled by default to preserve package focus strictly on RBAC diagnostics
+    | and access controls unless explicitly enabled.
+    |
+    | - 'enabled': Enable or disable the user creation UI and endpoints.
+    | - 'fields': Dynamic field definitions for the creation form (null = default
+    |     display_columns + email).
+    | - 'assign_roles': Allow assigning initial Spatie roles upon creation.
+    | - 'require_password': Show password field with 1-click random generator.
+    | - 'action': Optional custom Action class/Closure to customize user creation logic.
+    |
+    */
+    'user_creation' => [
+        'enabled' => env('PERMISSION_TOOLKIT_USER_CREATION_ENABLED', false),
+        'fields' => null,
+        'assign_roles' => true,
+        'require_password' => true,
+        'action' => null,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Super Admin Configuration
     |--------------------------------------------------------------------------
     |

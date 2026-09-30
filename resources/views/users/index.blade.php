@@ -78,8 +78,15 @@
             </p>
         </div>
 
-        <!-- Filter & Search Toolbar -->
-        <form method="GET" action="{{ route('permission-toolkit.users.index') }}" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+            @if($userCreationEnabled ?? config('permission-toolkit.user_creation.enabled', false))
+                <a href="{{ route('permission-toolkit.users.create') }}" class="btn" style="background-color: var(--success); font-weight: 600; text-decoration: none;">
+                    <span>➕</span> {{ __('permission-toolkit::messages.users_btn_create') }}
+                </a>
+            @endif
+
+            <!-- Filter & Search Toolbar -->
+            <form method="GET" action="{{ route('permission-toolkit.users.index') }}" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
             <!-- Text Search -->
             <input 
                 type="text" 
@@ -125,6 +132,7 @@
                 <a href="{{ route('permission-toolkit.users.index') }}" class="btn" style="background: var(--border);" title="{{ __('permission-toolkit::messages.btn_reset') }}">✕ {{ __('permission-toolkit::messages.btn_reset') }}</a>
             @endif
         </form>
+        </div>
     </div>
 
     <!-- Active Filters Feedback Banner -->

@@ -178,6 +178,7 @@ https://your-app.test/permission-manager
   - **Module Filter**: Group permissions by feature (`Users`, `Billing`, `Settings`) and filter quickly.
   - **1-Click Web Export & Import**: Download and upload role/permission JSON packages directly from the UI.
 - **Gestione Utenti**: `/permission-manager/users`:
+  - **Creazione Utenti Opzionale**: Abilitando `PERMISSION_TOOLKIT_USER_CREATION_ENABLED=true`, compare il pulsante `+ Nuovo Utente` con form dedicata per utenti non-tecnici, generatore istantaneo di password sicura (1 click con copia negli appunti), e assegnazione immediata dei ruoli Spatie con audit log automatico.
   - **Priorità Utenti Attivi**: Mostra sempre prima tutti gli utenti attivi (`ATTIVO`), relegando gli utenti disattivati (`DISATTIVATO` / Soft Deleted) in fondo.
   - **Colonne e Visualizzazione Configurabili**: Configura quali colonne mostrare al posto del solo `name` (es. `['cognome', 'nome']` o `['last_name', 'first_name']`) via `config('permission-toolkit.users.display_columns')`.
   - **Ordinamento Automatico Multi-Colonna**: Se configurato con `['cognome', 'nome']`, la lista viene ordinata automaticamente per `cognome` e poi `nome` (mantenendo sempre gli attivi per primi), con supporto per header cliccabili e ordinamento custom (`order_by`).
