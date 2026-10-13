@@ -60,5 +60,9 @@ abstract class TestCase extends Orchestra
         // 3. Run Audit Log migration
         $auditMigration = require __DIR__ . '/../database/migrations/create_permission_audit_logs_table.php.stub';
         $auditMigration->up();
+
+        // 4. Run Handover Template migration
+        $handoverMigration = require __DIR__ . '/../database/migrations/create_permission_handover_templates_table.php.stub';
+        $handoverMigration->up();
     }
 }

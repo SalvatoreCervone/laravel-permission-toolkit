@@ -322,6 +322,13 @@
                                         {{ __('permission-toolkit::messages.users_manage_btn') }}
                                     </a>
 
+                                    @if(config('permission-toolkit.handover.enabled', true))
+                                        <!-- Handover Report Button -->
+                                        <a href="{{ route('permission-toolkit.handover.sheet', $user->id) }}" target="_blank" class="btn btn-secondary" style="padding: 0.3rem 0.6rem; font-size: 0.75rem;" title="{{ __('permission-toolkit::messages.handover_generate_btn') }}">
+                                            📄
+                                        </a>
+                                    @endif
+
                                     <!-- Deactivate / Delete Form -->
                                     <form method="POST" action="{{ route('permission-toolkit.users.destroy', $user->id) }}" onsubmit="return confirm('{{ addslashes($supportsSoftDeletes ? __('permission-toolkit::messages.users_confirm_deactivate', ['name' => $displayName]) : __('permission-toolkit::messages.users_confirm_delete', ['name' => $displayName])) }}');">
                                         @csrf

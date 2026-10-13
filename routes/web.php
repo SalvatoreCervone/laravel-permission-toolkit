@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\AuditLogController;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\DoctorController;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\ExportImportController;
+use SalvatoreCervone\PermissionToolkit\Http\Controllers\HandoverController;
+use SalvatoreCervone\PermissionToolkit\Http\Controllers\HandoverTemplateController;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\LocaleController;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\MatrixController;
 use SalvatoreCervone\PermissionToolkit\Http\Controllers\PermissionController;
@@ -63,4 +65,12 @@ Route::group(['prefix' => $prefix, 'middleware' => $middleware, 'as' => 'permiss
 
     // Integrity Doctor
     Route::get('/doctor', [DoctorController::class, 'index'])->name('doctor');
+
+    // Compliance & User Access Handover (Verbali di Assegnazione)
+    Route::get('/users/{id}/handover', [HandoverController::class, 'show'])->name('handover.sheet');
+    Route::get('/handover-templates', [HandoverTemplateController::class, 'index'])->name('handover.templates.index');
+    Route::post('/handover-templates', [HandoverTemplateController::class, 'store'])->name('handover.templates.store');
+    Route::match(['post', 'put'], '/handover-templates/{id}', [HandoverTemplateController::class, 'update'])->name('handover.templates.update');
+    Route::post('/handover-templates/{id}/default', [HandoverTemplateController::class, 'setDefault'])->name('handover.templates.set-default');
+    Route::delete('/handover-templates/{id}', [HandoverTemplateController::class, 'destroy'])->name('handover.templates.destroy');
 });

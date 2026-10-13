@@ -140,5 +140,45 @@ class DatabaseSeeder extends Seeder
                 'created_at' => now()->subDay(),
             ]);
         }
+
+        // 6. Seed Realistic Handover Signoff Templates
+        $handoverTable = config('permission-toolkit.handover.table', 'permission_handover_templates');
+        if (\Illuminate\Support\Facades\Schema::hasTable($handoverTable)) {
+            \SalvatoreCervone\PermissionToolkit\Models\HandoverTemplate::firstOrCreate([
+                'name' => 'Direzione IT & Cybersecurity',
+            ], [
+                'company_name' => 'Acme Enterprise S.p.A.',
+                'department' => 'Sistemi Informativi & Cybersecurity',
+                'signer_title' => 'Chief Information Security Officer (CISO)',
+                'signer_name' => 'Ing. Roberto Mancini',
+                'disclaimer_text' => "Il sottoscritto dichiara di aver ricevuto le credenziali di autenticazione al sistema informativo e la presente scheda di attribuzione privilegi. Si impegna ad osservare rigorosamente le istruzioni impartite dal Titolare del trattamento ai sensi dell'art. 29 del Regolamento UE 2016/679 (GDPR), custodendo con la massima diligenza e segretezza le chiavi di accesso personali e segnalando tempestivamente al Team di Sicurezza qualsiasi anomalia o violazione rilevata.",
+                'notes' => 'Da archiviare nel fascicolo di conformità IT e conservare per tutta la durata del rapporto contrattuale.',
+                'is_default' => true,
+            ]);
+
+            \SalvatoreCervone\PermissionToolkit\Models\HandoverTemplate::firstOrCreate([
+                'name' => 'Direzione Risorse Umane',
+            ], [
+                'company_name' => 'Acme Enterprise S.p.A.',
+                'department' => 'People & Organization / HR',
+                'signer_title' => 'Head of Human Resources',
+                'signer_name' => 'Dott.ssa Laura Corti',
+                'disclaimer_text' => "Con la firma del presente documento, l'incaricato attesta la consegna del profilo di accesso informatico autorizzato per le sole mansioni lavorative contrattualmente concordate, impegnandosi a non cedere né divulgare a terzi le credenziali ricevute in conformità con il Regolamento Aziendale.",
+                'notes' => 'Copia destinata al fascicolo personale del dipendente.',
+                'is_default' => false,
+            ]);
+
+            \SalvatoreCervone\PermissionToolkit\Models\HandoverTemplate::firstOrCreate([
+                'name' => 'Direzione Commerciale & Marketing',
+            ], [
+                'company_name' => 'Acme Enterprise S.p.A.',
+                'department' => 'Sales & Business Development',
+                'signer_title' => 'Chief Commercial Officer (CCO)',
+                'signer_name' => 'Dott. Alessandro Galli',
+                'disclaimer_text' => "Il sottoscritto dichiara di aver preso visione dei ruoli e permessi associati alla propria utenza sul CRM e sui database aziendali, assumendosi l'onere della corretta custodia dei dati di clienti e partner commerciali nel rispetto delle norme sulla riservatezza.",
+                'notes' => 'Valido per la sede centrale e le filiali regionali.',
+                'is_default' => false,
+            ]);
+        }
     }
 }

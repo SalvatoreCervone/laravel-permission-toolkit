@@ -468,6 +468,11 @@
                 <a href="{{ route('permission-toolkit.doctor') }}" class="{{ request()->routeIs('permission-toolkit.doctor') ? 'active' : '' }}">
                     🩺 {{ __('permission-toolkit::messages.nav_doctor') }}
                 </a>
+                @if(config('permission-toolkit.handover.enabled', true))
+                    <a href="{{ route('permission-toolkit.handover.templates.index') }}" class="{{ request()->routeIs('permission-toolkit.handover.*') ? 'active' : '' }}">
+                        📄 {{ __('permission-toolkit::messages.nav_handover') }}
+                    </a>
+                @endif
             </nav>
 
             <!-- Language Switcher -->

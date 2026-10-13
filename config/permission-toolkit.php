@@ -193,4 +193,34 @@ return [
         'ignore_roles' => [],
         'ignore_permissions' => [],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Compliance & User Access Handover Sheet (Verbali di Assegnazione)
+    |--------------------------------------------------------------------------
+    |
+    | Enables generating printable A4 handover reports / signoff sheets for users,
+    | certifying the exact roles and permissions granted to each user for GDPR (art. 29),
+    | ISO 27001, and SOC2 IT compliance audits.
+    |
+    | - 'enabled': Enable or disable the handover feature, routes, and UI buttons.
+    | - 'table': Database table for parametric handover templates.
+    | - 'default_company_name': Company name to show on handover sheets.
+    | - 'default_signer_title': Default signer title (e.g. CISO, HR Director).
+    | - 'default_signer_name': Default signer name.
+    | - 'default_disclaimer': Standard legal disclaimer for credential receipt and GDPR awareness.
+    | - 'template_resolver': Optional closure or invokable class to deduce template per user:
+    |                        fn($user) => 'it-department' or template ID / model instance.
+    |
+    */
+    'handover' => [
+        'enabled' => env('PERMISSION_TOOLKIT_HANDOVER_ENABLED', true),
+        'table' => 'permission_handover_templates',
+        'default_company_name' => env('APP_NAME', 'Enterprise Corp'),
+        'default_signer_title' => 'Il Responsabile della Sicurezza IT',
+        'default_signer_name' => 'Amministratore di Sistema',
+        'default_disclaimer' => "Il sottoscritto dichiara di aver ricevuto le credenziali di accesso al sistema informativo e la presente attestazione relativa ai ruoli e permessi associati alla propria utenza. Dichiara altresì di essere a conoscenza delle proprie responsabilità in materia di riservatezza, custodia delle credenziali e trattamento dei dati ai sensi della normativa vigente (Regolamento UE 2016/679 - GDPR) e delle policy aziendali.",
+        'template_resolver' => null,
+    ],
 ];
+

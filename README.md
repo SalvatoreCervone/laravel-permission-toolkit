@@ -34,6 +34,8 @@
   List users with live search, filter by Role or Permission (with direct vs inherited indicators), filter by SoftDeletes status (Active vs Deactivated), and safely manage user deactivation, restoration, and force deletion with built-in self-protection guardrails.
 - 📜 **Security & Compliance Audit Trail (`/permission-manager/audit-logs`)**  
   Immutable activity log recording who created, deleted, assigned, or revoked roles and permissions with actor, target user, IP address, and timestamp.
+- 📄 **Compliance Access Handover Reports & Parametric Signers (`/permission-manager/handover-templates` & `/permission-manager/users/{id}/handover`)**  
+  Generate print-ready A4 handover reports for user credential receipt and privilege assignment with zero heavy binary PDF dependencies. Fully parametric templates per department or director (e.g. CISO, HR Director, CFO) with customized legal disclaimers for GDPR (Art. 29) & ISO 27001 audit compliance.
 - 🩺 **Integrity Doctor (`permission:doctor` & `/permission-manager/doctor`)**  
   Scans your database for orphaned pivot records, empty roles, unused permissions, and Web vs API guard mismatches.
 - 💾 **JSON Export & Import (`permission:export` / `permission:import`)**  
@@ -186,6 +188,7 @@ https://your-app.test/permission-manager
   - **Password & Accessi**: Gestione rapida permessi diretti, ruoli, e reset password con data scadenza.
 - **Diagnostic Simulator**: `/permission-manager/simulator` (test interattivo con supporto per Gate globali, Policy e Spatie Teams)
 - **Audit Trail**: `/permission-manager/audit-logs` (registro di conformità transazionale)
+- **Verbali di Consegna (Handover Reports)**: `/permission-manager/handover-templates` (gestione modelli/firmatari per dipartimento) & `/permission-manager/users/{id}/handover` (foglio A4 stampabile print-ready con doppia firma e disclaimer GDPR)
 - **Integrity Doctor**: `/permission-manager/doctor` (diagnostica senza query N+1)
 - **🌓 Dark / Light Mode**: Seamless theme toggle in the header with persistent state.
 

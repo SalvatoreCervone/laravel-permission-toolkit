@@ -71,6 +71,12 @@ class PermissionToolkitServiceProvider extends ServiceProvider
                 ], 'permission-toolkit-migrations');
             }
 
+            if (! class_exists('CreatePermissionHandoverTemplatesTable')) {
+                $this->publishes([
+                    __DIR__ . '/../database/migrations/create_permission_handover_templates_table.php.stub' => database_path('migrations/' . date('Y_m_d_His', time() + 1) . '_create_permission_handover_templates_table.php'),
+                ], 'permission-toolkit-migrations');
+            }
+
             // Register Commands
             $this->commands([
                 SimulatePermissionCommand::class,

@@ -26,6 +26,11 @@
             <a href="{{ route('permission-toolkit.simulator', ['user_id' => $user->id, 'ability' => '']) }}" class="btn btn-secondary">
                 🔍 {{ __('permission-toolkit::messages.user_edit_btn_simulator') }}
             </a>
+            @if(config('permission-toolkit.handover.enabled', true))
+                <a href="{{ route('permission-toolkit.handover.sheet', $user->id) }}" target="_blank" class="btn btn-secondary">
+                    📄 {{ __('permission-toolkit::messages.handover_generate_btn') }}
+                </a>
+            @endif
         </div>
     </div>
 
