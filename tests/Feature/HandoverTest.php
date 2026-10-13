@@ -309,6 +309,71 @@ class HandoverTest extends TestCase
     }
 
     /** @test */
+    public function it_renders_dynamic_labels_and_titles_when_provided()
+    {
+        $tmpl = HandoverTemplate::create([
+            'name' => 'Custom Labels Template',
+            'doc_title' => 'Verbale Straordinario di Assegnazione',
+            'doc_subtitle' => 'Sottotitolo Personalizzato GDPR',
+            'signer_label' => 'Direzione Generale:',
+            'signer_name' => 'Dott. Mario Draghi',
+            'signer_title' => 'Direttore Generale',
+            'second_signer_label' => 'Responsabile Conformità:',
+            'second_signer_name' => 'Avv. Giulia De Rossi',
+            'second_signer_title' => 'DPO Aziendale',
+            'user_signer_label' => 'Dipendente Ricevente:',
+            'user_role_label' => 'Specialista Contabile',
+            'disclaimer_text' => 'Dichiarazione personalizzata.',
+            'is_default' => false,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get("/permission-manager/users/{$this->targetUser->id}/handover?template_id={$tmpl->id}");
+
+        $response->assertStatus(200);
+        $response->assertSee('Verbale Straordinario di Assegnazione');
+        $response->assertSee('Sottotitolo Personalizzato GDPR');
+        $response->assertSee('Direzione Generale:');
+        $response->assertSee('Dott. Mario Draghi');
+        $response->assertSee('Responsabile Conformità:');
+        $response->assertSee('Avv. Giulia De Rossi');
+        $response->assertSee('DPO Aziendale');
+        $response->assertSee('Dipendente Ricevente:');
+        $response->assertSee('Specialista Contabile');
+    }
+
+    /** @test */
+    public function it_suppresses_labels_and_elements_when_fields_are_null_or_empty()
+    {
+        $tmpl = HandoverTemplate::create([
+            'name' => 'Minimal Template',
+            'doc_title' => null,
+            'doc_subtitle' => null,
+            'company_name' => null,
+            'department' => null,
+            'signer_name' => 'Solo Nome',
+            'signer_title' => null,
+            'second_signer_name' => null,
+            'second_signer_title' => null,
+            'reference_code' => null,
+            'status_label' => null,
+            'notes' => null,
+            'footer_text' => null,
+            'disclaimer_text' => 'Testo essenziale.',
+            'is_default' => true,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get("/permission-manager/users/{$this->targetUser->id}/handover?template_id={$tmpl->id}");
+
+        $response->assertStatus(200);
+        $response->assertDontSee('<div class="doc-subtitle">', false);
+        $response->assertDontSee('<div class="doc-dept">', false);
+        $response->assertDontSee('<strong>REF:</strong>', false);
+        $response->assertDontSee('<strong>Status:</strong>', false);
+        $response->assertDontSee('<strong>Note:</strong>', false);
+        $response->assertDontSee('Compliance & Access Governance System');
+    }
+
+    /** @test */
     public function it_returns_404_when_handover_feature_is_disabled()
     {
         config()->set('permission-toolkit.handover.enabled', false);

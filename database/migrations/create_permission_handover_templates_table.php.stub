@@ -16,13 +16,19 @@ return new class extends Migration
         Schema::create($tableName, function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('doc_title')->nullable();
+            $table->text('doc_subtitle')->nullable();
             $table->string('application_name')->nullable();
             $table->string('company_name')->nullable();
             $table->string('department')->nullable();
-            $table->string('signer_title');
+            $table->string('signer_title')->nullable();
             $table->string('signer_name');
+            $table->string('signer_label')->nullable();
             $table->string('second_signer_title')->nullable();
             $table->string('second_signer_name')->nullable();
+            $table->string('second_signer_label')->nullable();
+            $table->string('user_signer_label')->nullable();
+            $table->string('user_role_label')->nullable();
             $table->string('reference_code')->nullable();
             $table->string('status_label')->nullable();
             $table->text('disclaimer_text');

@@ -374,10 +374,12 @@
                             🖥️ {{ $template->application_name }}
                         </div>
                     @endif
-                    <div class="doc-company">
-                        {{ $template->company_name ?? config('permission-toolkit.handover.default_company_name', config('app.name', 'Enterprise Corp')) }}
-                    </div>
-                    @if($template->department)
+                    @if(!empty($template->company_name))
+                        <div class="doc-company">
+                            {{ $template->company_name }}
+                        </div>
+                    @endif
+                    @if(!empty($template->department))
                         <div class="doc-dept">
                             {{ $template->department }}
                         </div>
@@ -396,10 +398,17 @@
 
             <!-- Title -->
             <div class="doc-title-block">
-                <h1 class="doc-title">{{ __('permission-toolkit::messages.handover_doc_title') }}</h1>
-                <div class="doc-subtitle">
-                    {{ __('permission-toolkit::messages.handover_doc_subtitle') }}
-                </div>
+                @php
+                    $docTitle = $template->doc_title !== null ? $template->doc_title : __('permission-toolkit::messages.handover_doc_title');
+                @endphp
+                @if(!empty(trim($docTitle)))
+                    <h1 class="doc-title">{{ $docTitle }}</h1>
+                @endif
+                @if(!empty($template->doc_subtitle))
+                    <div class="doc-subtitle">
+                        {{ $template->doc_subtitle }}
+                    </div>
+                @endif
             </div>
 
             <!-- User Info Box -->
@@ -413,24 +422,30 @@
                         <span class="info-label">{{ __('permission-toolkit::messages.handover_lbl_fullname') }}:</span>
                         <span class="info-value">{{ \SalvatoreCervone\PermissionToolkit\PermissionToolkit::getUserDisplayName($user) }}</span>
                     </div>
-                    <div class="info-item">
-                        <span class="info-label">{{ __('permission-toolkit::messages.users_th_email') }}:</span>
-                        <span class="info-value">{{ $user->email ?? 'N/A' }}</span>
-                    </div>
+                    @if(!empty($user->email))
+                        <div class="info-item">
+                            <span class="info-label">{{ __('permission-toolkit::messages.users_th_email') }}:</span>
+                            <span class="info-value">{{ $user->email }}</span>
+                        </div>
+                    @endif
                     @if(!empty($template->application_name))
                         <div class="info-item">
                             <span class="info-label">{{ __('permission-toolkit::messages.handover_lbl_application') }}:</span>
                             <span class="info-value" style="font-weight: 600; color: #4338ca;">{{ $template->application_name }}</span>
                         </div>
                     @endif
-                    <div class="info-item">
-                        <span class="info-label">{{ __('permission-toolkit::messages.handover_lbl_account_created') }}:</span>
-                        <span class="info-value">{{ $user->created_at ? $user->created_at->format('d/m/Y') : 'N/A' }}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">{{ __('permission-toolkit::messages.handover_lbl_account_activated') }}:</span>
-                        <span class="info-value" style="font-weight: 600;">{{ $user->updated_at ? $user->updated_at->format('d/m/Y H:i') : ($user->created_at ? $user->created_at->format('d/m/Y') : now()->format('d/m/Y')) }}</span>
-                    </div>
+                    @if(!empty($user->created_at))
+                        <div class="info-item">
+                            <span class="info-label">{{ __('permission-toolkit::messages.handover_lbl_account_created') }}:</span>
+                            <span class="info-value">{{ $user->created_at->format('d/m/Y') }}</span>
+                        </div>
+                    @endif
+                    @if(!empty($user->updated_at))
+                        <div class="info-item">
+                            <span class="info-label">{{ __('permission-toolkit::messages.handover_lbl_account_activated') }}:</span>
+                            <span class="info-value" style="font-weight: 600;">{{ $user->updated_at->format('d/m/Y H:i') }}</span>
+                        </div>
+                    @endif
                     <div class="info-item">
                         <span class="info-label">{{ __('permission-toolkit::messages.users_th_status') }}:</span>
                         <span class="info-value" style="color: #059669; font-weight: 700;">● {{ __('permission-toolkit::messages.users_status_active') }}</span>
@@ -526,12 +541,14 @@
                 <div class="section-title">
                     <span>4. {{ __('permission-toolkit::messages.handover_sec_disclaimer') }}</span>
                 </div>
-                <div class="disclaimer-box">
-                    {!! nl2br(e($template->disclaimer_text)) !!}
-                </div>
-                @if($template->notes)
+                @if(!empty($template->disclaimer_text))
+                    <div class="disclaimer-box">
+                        {!! nl2br(e($template->disclaimer_text)) !!}
+                    </div>
+                @endif
+                @if(!empty($template->notes))
                     <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.4rem; font-style: italic;">
-                        <strong>Note:</strong> {{ $template->notes }}
+                        <strong>{{ __('permission-toolkit::messages.handover_lbl_notes') }}:</strong> {{ $template->notes }}
                     </div>
                 @endif
             </div>
@@ -544,15 +561,26 @@
                 <!-- 1. Direttore Utente / Responsabile -->
                 <div class="signature-card">
                     <div>
-                        <div class="signature-header">
-                            {{ __('permission-toolkit::messages.handover_sig_management_title') }}
-                        </div>
-                        <div class="signature-signer">
-                            {{ $template->signer_name }}
-                        </div>
-                        <div class="signature-title">
-                            {{ $template->signer_title }}
-                        </div>
+                        @php
+                            $signerLabel = $template->signer_label !== null 
+                                ? $template->signer_label 
+                                : __('permission-toolkit::messages.handover_sig_management_title');
+                        @endphp
+                        @if(!empty(trim($signerLabel)))
+                            <div class="signature-header">
+                                {{ $signerLabel }}
+                            </div>
+                        @endif
+                        @if(!empty($template->signer_name))
+                            <div class="signature-signer">
+                                {{ $template->signer_name }}
+                            </div>
+                        @endif
+                        @if(!empty($template->signer_title))
+                            <div class="signature-title">
+                                {{ $template->signer_title }}
+                            </div>
+                        @endif
                     </div>
                     <div class="signature-line-block">
                         <span>{{ __('permission-toolkit::messages.handover_sig_sign') }}</span>
@@ -564,15 +592,24 @@
                     <!-- 2. Altro Direttore / Incaricato Firmatario (CISO, DPO, Amm. Sistema) -->
                     <div class="signature-card">
                         <div>
-                            <div class="signature-header">
-                                {{ __('permission-toolkit::messages.handover_sig_second_management_title') }}
-                            </div>
+                            @php
+                                $secondSignerLabel = $template->second_signer_label !== null
+                                    ? $template->second_signer_label
+                                    : __('permission-toolkit::messages.handover_sig_second_management_title');
+                            @endphp
+                            @if(!empty(trim($secondSignerLabel)))
+                                <div class="signature-header">
+                                    {{ $secondSignerLabel }}
+                                </div>
+                            @endif
                             <div class="signature-signer">
                                 {{ $template->second_signer_name }}
                             </div>
-                            <div class="signature-title">
-                                {{ $template->second_signer_title ?? __('permission-toolkit::messages.handover_sig_second_default_title') }}
-                            </div>
+                            @if(!empty($template->second_signer_title))
+                                <div class="signature-title">
+                                    {{ $template->second_signer_title }}
+                                </div>
+                            @endif
                         </div>
                         <div class="signature-line-block">
                             <span>{{ __('permission-toolkit::messages.handover_sig_sign') }}</span>
@@ -584,15 +621,27 @@
                 <!-- 3. Utente Assegnatario per Ricevuta -->
                 <div class="signature-card">
                     <div>
-                        <div class="signature-header">
-                            {{ __('permission-toolkit::messages.handover_sig_user_title') }}
-                        </div>
+                        @php
+                            $userSignerLabel = $template->user_signer_label !== null
+                                ? $template->user_signer_label
+                                : __('permission-toolkit::messages.handover_sig_user_title');
+                            $userRoleLabel = $template->user_role_label !== null
+                                ? $template->user_role_label
+                                : __('permission-toolkit::messages.handover_sig_user_role');
+                        @endphp
+                        @if(!empty(trim($userSignerLabel)))
+                            <div class="signature-header">
+                                {{ $userSignerLabel }}
+                            </div>
+                        @endif
                         <div class="signature-signer">
                             {{ \SalvatoreCervone\PermissionToolkit\PermissionToolkit::getUserDisplayName($user) }}
                         </div>
-                        <div class="signature-title">
-                            {{ __('permission-toolkit::messages.handover_sig_user_role') }}
-                        </div>
+                        @if(!empty(trim($userRoleLabel)))
+                            <div class="signature-title">
+                                {{ $userRoleLabel }}
+                            </div>
+                        @endif
                     </div>
                     <div class="signature-line-block">
                         <span>{{ __('permission-toolkit::messages.handover_sig_sign_receipt') }}</span>
@@ -604,11 +653,7 @@
             <!-- Footer -->
             <div class="doc-footer">
                 <div>
-                    @if(!empty($template->footer_text))
-                        {{ $template->footer_text }}
-                    @else
-                        {{ ($template->company_name ?? config('permission-toolkit.handover.default_company_name', config('app.name', 'Enterprise Corp'))) }} • {{ !empty($template->application_name) ? $template->application_name . ' • ' : '' }}Compliance & Access Governance System
-                    @endif
+                    {{ $template->footer_text ?? '' }}
                 </div>
                 <div>
                     Page 1 / 1

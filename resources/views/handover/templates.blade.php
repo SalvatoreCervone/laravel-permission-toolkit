@@ -144,27 +144,31 @@
                                 <div style="background: var(--bg-item); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.75rem; margin-bottom: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;">
                                     <div>
                                         <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">
-                                            1° Firmatario (Direttore Utente):
+                                            {{ $tmpl->signer_label ?: __('permission-toolkit::messages.handover_sig_management_title') }}
                                         </div>
                                         <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-main);">
                                             {{ $tmpl->signer_name }}
                                         </div>
-                                        <div style="font-size: 0.75rem; color: var(--text-muted);">
-                                            {{ $tmpl->signer_title }}
-                                        </div>
+                                        @if(!empty($tmpl->signer_title))
+                                            <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                                {{ $tmpl->signer_title }}
+                                            </div>
+                                        @endif
                                     </div>
 
-                                    @if($tmpl->second_signer_name)
+                                    @if(!empty($tmpl->second_signer_name))
                                         <div style="border-top: 1px dashed var(--border); padding-top: 0.4rem;">
                                             <div style="font-size: 0.72rem; color: var(--accent-heading); text-transform: uppercase; letter-spacing: 0.03em;">
-                                                2° Firmatario (Altro Direttore / Incaricato):
+                                                {{ $tmpl->second_signer_label ?: __('permission-toolkit::messages.handover_sig_second_management_title') }}
                                             </div>
                                             <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-main);">
                                                 {{ $tmpl->second_signer_name }}
                                             </div>
-                                            <div style="font-size: 0.75rem; color: var(--text-muted);">
-                                                {{ $tmpl->second_signer_title ?? 'Incaricato' }}
-                                            </div>
+                                            @if(!empty($tmpl->second_signer_title))
+                                                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                                    {{ $tmpl->second_signer_title }}
+                                                </div>
+                                            @endif
                                         </div>
                                     @endif
                                 </div>
@@ -191,7 +195,7 @@
                                 @endif
 
                                 <button type="button" class="btn btn-secondary" style="font-size: 0.75rem; padding: 0.3rem 0.6rem;" onclick='openEditModal(@json($tmpl))'>
-                                    ✏️ {{ __('permission-toolkit::messages.btn_edit') ?? 'Modifica' }}
+                                    ✏️ {{ __('permission-toolkit::messages.btn_edit') }}
                                 </button>
 
                                 <form method="POST" action="{{ route('permission-toolkit.handover.templates.destroy', $tmpl->id) }}" onsubmit="return confirm('{{ addslashes(__('permission-toolkit::messages.handover_confirm_delete', ['name' => $tmpl->name])) }}');">
@@ -255,23 +259,52 @@
                     </div>
                 </div>
 
-                <!-- 1° Firmatario (Direttore Utente) -->
+                <!-- Titoli Documento Dinamici -->
                 <div style="background: var(--bg-item); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.85rem;">
                     <div style="font-size: 0.78rem; font-weight: 700; color: var(--accent-heading); margin-bottom: 0.5rem; text-transform: uppercase;">
-                        👤 1° Firmatario (Direttore / Responsabile dell'Utente) *
+                        📄 {{ __('permission-toolkit::messages.handover_lbl_doc_title') }}
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                         <div>
                             <label style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-main);">
-                                {{ __('permission-toolkit::messages.handover_lbl_signer_title') }} *
+                                {{ __('permission-toolkit::messages.handover_lbl_doc_title') }}
                             </label>
-                            <input type="text" name="signer_title" id="form-signer-title" class="input-control" required placeholder="es. Il Responsabile della Sicurezza IT">
+                            <input type="text" name="doc_title" id="form-doc-title" class="input-control" placeholder="es. Verbale di Consegna e Attribuzione Privilegi">
                         </div>
                         <div>
                             <label style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-main);">
-                                {{ __('permission-toolkit::messages.handover_lbl_signer_name') }} *
+                                {{ __('permission-toolkit::messages.handover_lbl_doc_subtitle') }}
                             </label>
-                            <input type="text" name="signer_name" id="form-signer-name" class="input-control" required placeholder="es. Ing. Roberto Mancini">
+                            <input type="text" name="doc_subtitle" id="form-doc-subtitle" class="input-control" placeholder="es. Attestazione ex GDPR art. 29 (vuoto = non mostrare)">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1° Firmatario (Direttore Utente) -->
+                <div style="background: var(--bg-item); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.85rem;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: var(--accent-heading); margin-bottom: 0.5rem; text-transform: uppercase;">
+                        {{ __('permission-toolkit::messages.handover_sec_signer_1') }} *
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                        <div>
+                            <label style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-main);">
+                                {{ __('permission-toolkit::messages.handover_lbl_signer_label') }}
+                            </label>
+                            <input type="text" name="signer_label" id="form-signer-label" class="input-control" placeholder="es. Per la Direzione / Responsabile Utente">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-main);">
+                                    {{ __('permission-toolkit::messages.handover_lbl_signer_name') }} *
+                                </label>
+                                <input type="text" name="signer_name" id="form-signer-name" class="input-control" required placeholder="es. Ing. Roberto Mancini">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-main);">
+                                    {{ __('permission-toolkit::messages.handover_lbl_signer_title') }}
+                                </label>
+                                <input type="text" name="signer_title" id="form-signer-title" class="input-control" placeholder="es. Il Responsabile della Sicurezza IT">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -279,20 +312,49 @@
                 <!-- 2° Firmatario (Altro Direttore / Incaricato opzionale) -->
                 <div style="background: var(--bg-item); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.85rem;">
                     <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
-                        👥 2° Firmatario (Opzionale: CISO, DPO, Amm. Sistema o Altro Direttore)
+                        {{ __('permission-toolkit::messages.handover_sec_signer_2') }}
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                        <div>
+                            <label style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-main);">
+                                {{ __('permission-toolkit::messages.handover_lbl_second_signer_label') }}
+                            </label>
+                            <input type="text" name="second_signer_label" id="form-second-signer-label" class="input-control" placeholder="es. Per la Sicurezza / Altro Firmatario">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                            <div>
+                                <label style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-main);">
+                                    {{ __('permission-toolkit::messages.handover_lbl_second_signer_name') }}
+                                </label>
+                                <input type="text" name="second_signer_name" id="form-second-signer-name" class="input-control" placeholder="es. Avv. Mario Rossi">
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-main);">
+                                    {{ __('permission-toolkit::messages.handover_lbl_second_signer_title') }}
+                                </label>
+                                <input type="text" name="second_signer_title" id="form-second-signer-title" class="input-control" placeholder="es. Data Protection Officer (DPO)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Box Firmatario Utente (Ricevuta) -->
+                <div style="background: var(--bg-item); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.85rem;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+                        {{ __('permission-toolkit::messages.handover_sec_signer_user') }}
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                         <div>
                             <label style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-main);">
-                                {{ __('permission-toolkit::messages.handover_lbl_second_signer_title') }}
+                                {{ __('permission-toolkit::messages.handover_lbl_user_signer_label') }}
                             </label>
-                            <input type="text" name="second_signer_title" id="form-second-signer-title" class="input-control" placeholder="es. Data Protection Officer (DPO)">
+                            <input type="text" name="user_signer_label" id="form-user-signer-label" class="input-control" placeholder="es. L'Assegnatario / L'Utente per Ricevuta">
                         </div>
                         <div>
                             <label style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-main);">
-                                {{ __('permission-toolkit::messages.handover_lbl_second_signer_name') }}
+                                {{ __('permission-toolkit::messages.handover_lbl_user_role_label') }}
                             </label>
-                            <input type="text" name="second_signer_name" id="form-second-signer-name" class="input-control" placeholder="es. Avv. Mario Rossi">
+                            <input type="text" name="user_role_label" id="form-user-role-label" class="input-control" placeholder="es. Incaricato / Autorizzato al Trattamento">
                         </div>
                     </div>
                 </div>
@@ -334,7 +396,7 @@
                     <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-main);">
                         {{ __('permission-toolkit::messages.handover_lbl_footer_text') }}
                     </label>
-                    <input type="text" name="footer_text" id="form-footer-text" class="input-control" placeholder="es. Acme S.p.A. • Sistema Informativo Integrato (lascia vuoto per default dinamico)">
+                    <input type="text" name="footer_text" id="form-footer-text" class="input-control" placeholder="es. Acme S.p.A. • Sistema Informativo Integrato (lascia vuoto per non mostrare)">
                 </div>
 
                 <div>
@@ -370,13 +432,19 @@
         document.getElementById('method-container').innerHTML = '';
 
         document.getElementById('form-name').value = '';
+        document.getElementById('form-doc-title').value = '';
+        document.getElementById('form-doc-subtitle').value = '';
         document.getElementById('form-application').value = '';
         document.getElementById('form-company').value = defaultCompany;
         document.getElementById('form-department').value = '';
+        document.getElementById('form-signer-label').value = '';
         document.getElementById('form-signer-title').value = defaultSignerTitle;
         document.getElementById('form-signer-name').value = defaultSignerName;
+        document.getElementById('form-second-signer-label').value = '';
         document.getElementById('form-second-signer-title').value = '';
         document.getElementById('form-second-signer-name').value = '';
+        document.getElementById('form-user-signer-label').value = '';
+        document.getElementById('form-user-role-label').value = '';
         document.getElementById('form-reference-code').value = 'DOC-ACR';
         document.getElementById('form-status-label').value = 'Valido / Conforme';
         document.getElementById('form-disclaimer').value = defaultDisclaimer;
@@ -394,13 +462,19 @@
         document.getElementById('method-container').innerHTML = '@method("PUT")';
 
         document.getElementById('form-name').value = tmpl.name || '';
+        document.getElementById('form-doc-title').value = tmpl.doc_title || '';
+        document.getElementById('form-doc-subtitle').value = tmpl.doc_subtitle || '';
         document.getElementById('form-application').value = tmpl.application_name || '';
         document.getElementById('form-company').value = tmpl.company_name || '';
         document.getElementById('form-department').value = tmpl.department || '';
+        document.getElementById('form-signer-label').value = tmpl.signer_label || '';
         document.getElementById('form-signer-title').value = tmpl.signer_title || '';
         document.getElementById('form-signer-name').value = tmpl.signer_name || '';
+        document.getElementById('form-second-signer-label').value = tmpl.second_signer_label || '';
         document.getElementById('form-second-signer-title').value = tmpl.second_signer_title || '';
         document.getElementById('form-second-signer-name').value = tmpl.second_signer_name || '';
+        document.getElementById('form-user-signer-label').value = tmpl.user_signer_label || '';
+        document.getElementById('form-user-role-label').value = tmpl.user_role_label || '';
         document.getElementById('form-reference-code').value = tmpl.reference_code || '';
         document.getElementById('form-status-label').value = tmpl.status_label || '';
         document.getElementById('form-disclaimer').value = tmpl.disclaimer_text || '';
