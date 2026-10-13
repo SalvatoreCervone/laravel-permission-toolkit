@@ -38,7 +38,7 @@
         border: 1px solid var(--border);
         border-radius: 0.5rem;
         width: 100%;
-        max-width: 650px;
+        max-width: 680px;
         max-height: 90vh;
         overflow-y: auto;
         padding: 1.5rem;
@@ -101,9 +101,16 @@
                         <div class="template-card {{ $tmpl->is_default ? 'is-default' : '' }}">
                             <div>
                                 <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                    <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; color: var(--text-main);">
-                                        {{ $tmpl->name }}
-                                    </h3>
+                                    <div>
+                                        @if($tmpl->application_name)
+                                            <div style="font-size: 0.72rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.15rem;">
+                                                🖥️ {{ $tmpl->application_name }}
+                                            </div>
+                                        @endif
+                                        <h3 style="font-size: 1.05rem; font-weight: 700; margin: 0; color: var(--text-main);">
+                                            {{ $tmpl->name }}
+                                        </h3>
+                                    </div>
                                     @if($tmpl->is_default)
                                         <span class="badge badge-success" style="font-size: 0.7rem; padding: 0.2rem 0.5rem; display: inline-flex; align-items: center; gap: 0.25rem;">
                                             ⭐ {{ __('permission-toolkit::messages.handover_badge_default') }}
@@ -119,24 +126,61 @@
                                     </div>
                                 @endif
 
-                                <div style="background: var(--bg-item); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.75rem; margin-bottom: 0.75rem;">
-                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.2rem;">
-                                        {{ __('permission-toolkit::messages.handover_th_signer') }}:
-                                    </div>
-                                    <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-main);">
-                                        {{ $tmpl->signer_name }}
-                                    </div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted);">
-                                        {{ $tmpl->signer_title }}
-                                    </div>
+                                <!-- Badges metadata -->
+                                <div style="display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 0.65rem;">
+                                    @if($tmpl->reference_code)
+                                        <span class="badge badge-info" style="font-size: 0.68rem; padding: 0.15rem 0.4rem;">
+                                            REF: {{ $tmpl->reference_code }}
+                                        </span>
+                                    @endif
+                                    @if($tmpl->status_label)
+                                        <span class="badge badge-success" style="font-size: 0.68rem; padding: 0.15rem 0.4rem;">
+                                            Status: {{ $tmpl->status_label }}
+                                        </span>
+                                    @endif
                                 </div>
 
-                                <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; max-height: 4.2em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; margin-bottom: 0.75rem;" title="{{ $tmpl->disclaimer_text }}">
+                                <!-- Box Firmatari -->
+                                <div style="background: var(--bg-item); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.75rem; margin-bottom: 0.75rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <div>
+                                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.03em;">
+                                            1° Firmatario (Direttore Utente):
+                                        </div>
+                                        <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-main);">
+                                            {{ $tmpl->signer_name }}
+                                        </div>
+                                        <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                            {{ $tmpl->signer_title }}
+                                        </div>
+                                    </div>
+
+                                    @if($tmpl->second_signer_name)
+                                        <div style="border-top: 1px dashed var(--border); padding-top: 0.4rem;">
+                                            <div style="font-size: 0.72rem; color: var(--accent-heading); text-transform: uppercase; letter-spacing: 0.03em;">
+                                                2° Firmatario (Altro Direttore / Incaricato):
+                                            </div>
+                                            <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-main);">
+                                                {{ $tmpl->second_signer_name }}
+                                            </div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                                {{ $tmpl->second_signer_title ?? 'Incaricato' }}
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4; max-height: 3.5em; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 0.75rem;" title="{{ $tmpl->disclaimer_text }}">
                                     "{{ $tmpl->disclaimer_text }}"
                                 </div>
+
+                                @if($tmpl->footer_text)
+                                    <div style="font-size: 0.7rem; color: var(--text-muted); font-style: italic; margin-bottom: 0.5rem;">
+                                        📄 Footer: "{{ $tmpl->footer_text }}"
+                                    </div>
+                                @endif
                             </div>
 
-                            <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end; pt-2; border-top: 1px solid var(--border); padding-top: 0.75rem;">
+                            <div style="display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end; border-top: 1px solid var(--border); padding-top: 0.75rem;">
                                 @if(! $tmpl->is_default)
                                     <form method="POST" action="{{ route('permission-toolkit.handover.templates.set-default', $tmpl->id) }}">
                                         @csrf
@@ -181,11 +225,19 @@
             <div id="method-container"></div>
 
             <div style="display: flex; flex-direction: column; gap: 1rem;">
-                <div>
-                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-main);">
-                        {{ __('permission-toolkit::messages.handover_lbl_name') }} *
-                    </label>
-                    <input type="text" name="name" id="form-name" class="input-control" required placeholder="es. Direzione IT & Cybersecurity">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-main);">
+                            {{ __('permission-toolkit::messages.handover_lbl_name') }} *
+                        </label>
+                        <input type="text" name="name" id="form-name" class="input-control" required placeholder="es. Direzione Commerciale">
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-main);">
+                            {{ __('permission-toolkit::messages.handover_lbl_application') }}
+                        </label>
+                        <input type="text" name="application_name" id="form-application" class="input-control" placeholder="es. ERP Gestionale, CRM Cloud">
+                    </div>
                 </div>
 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
@@ -199,22 +251,65 @@
                         <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-main);">
                             {{ __('permission-toolkit::messages.handover_lbl_dept') }}
                         </label>
-                        <input type="text" name="department" id="form-department" class="input-control" placeholder="es. Reparto IT">
+                        <input type="text" name="department" id="form-department" class="input-control" placeholder="es. Reparto IT, Sales">
                     </div>
                 </div>
 
+                <!-- 1° Firmatario (Direttore Utente) -->
+                <div style="background: var(--bg-item); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.85rem;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: var(--accent-heading); margin-bottom: 0.5rem; text-transform: uppercase;">
+                        👤 1° Firmatario (Direttore / Responsabile dell'Utente) *
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                        <div>
+                            <label style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-main);">
+                                {{ __('permission-toolkit::messages.handover_lbl_signer_title') }} *
+                            </label>
+                            <input type="text" name="signer_title" id="form-signer-title" class="input-control" required placeholder="es. Il Responsabile della Sicurezza IT">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-main);">
+                                {{ __('permission-toolkit::messages.handover_lbl_signer_name') }} *
+                            </label>
+                            <input type="text" name="signer_name" id="form-signer-name" class="input-control" required placeholder="es. Ing. Roberto Mancini">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2° Firmatario (Altro Direttore / Incaricato opzionale) -->
+                <div style="background: var(--bg-item); border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.85rem;">
+                    <div style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+                        👥 2° Firmatario (Opzionale: CISO, DPO, Amm. Sistema o Altro Direttore)
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                        <div>
+                            <label style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-main);">
+                                {{ __('permission-toolkit::messages.handover_lbl_second_signer_title') }}
+                            </label>
+                            <input type="text" name="second_signer_title" id="form-second-signer-title" class="input-control" placeholder="es. Data Protection Officer (DPO)">
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 0.3rem; color: var(--text-main);">
+                                {{ __('permission-toolkit::messages.handover_lbl_second_signer_name') }}
+                            </label>
+                            <input type="text" name="second_signer_name" id="form-second-signer-name" class="input-control" placeholder="es. Avv. Mario Rossi">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Metadati Intestazione (REF e Status) -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
                     <div>
                         <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-main);">
-                            {{ __('permission-toolkit::messages.handover_lbl_signer_title') }} *
+                            {{ __('permission-toolkit::messages.handover_lbl_ref') }}
                         </label>
-                        <input type="text" name="signer_title" id="form-signer-title" class="input-control" required placeholder="es. Il Responsabile della Sicurezza IT">
+                        <input type="text" name="reference_code" id="form-reference-code" class="input-control" placeholder="es. DOC-ACR (lascia vuoto per non mostrare)">
                     </div>
                     <div>
                         <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-main);">
-                            {{ __('permission-toolkit::messages.handover_lbl_signer_name') }} *
+                            {{ __('permission-toolkit::messages.handover_lbl_status') }}
                         </label>
-                        <input type="text" name="signer_name" id="form-signer-name" class="input-control" required placeholder="es. Ing. Roberto Mancini">
+                        <input type="text" name="status_label" id="form-status-label" class="input-control" placeholder="es. Valido / Conforme (lascia vuoto per non mostrare)">
                     </div>
                 </div>
 
@@ -236,6 +331,13 @@
                 </div>
 
                 <div>
+                    <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.35rem; color: var(--text-main);">
+                        {{ __('permission-toolkit::messages.handover_lbl_footer_text') }}
+                    </label>
+                    <input type="text" name="footer_text" id="form-footer-text" class="input-control" placeholder="es. Acme S.p.A. • Sistema Informativo Integrato (lascia vuoto per default dinamico)">
+                </div>
+
+                <div>
                     <label style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer; color: var(--text-main);">
                         <input type="checkbox" name="is_default" value="1" id="form-default" style="accent-color: var(--primary);">
                         <span>{{ __('permission-toolkit::messages.handover_lbl_set_as_default') }}</span>
@@ -243,7 +345,7 @@
                 </div>
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; pt-3; border-top: 1px solid var(--border); padding-top: 1rem;">
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; border-top: 1px solid var(--border); padding-top: 1rem;">
                 <button type="button" class="btn btn-secondary" onclick="closeModal()">
                     {{ __('permission-toolkit::messages.btn_cancel') }}
                 </button>
@@ -268,12 +370,18 @@
         document.getElementById('method-container').innerHTML = '';
 
         document.getElementById('form-name').value = '';
+        document.getElementById('form-application').value = '';
         document.getElementById('form-company').value = defaultCompany;
         document.getElementById('form-department').value = '';
         document.getElementById('form-signer-title').value = defaultSignerTitle;
         document.getElementById('form-signer-name').value = defaultSignerName;
+        document.getElementById('form-second-signer-title').value = '';
+        document.getElementById('form-second-signer-name').value = '';
+        document.getElementById('form-reference-code').value = 'DOC-ACR';
+        document.getElementById('form-status-label').value = 'Valido / Conforme';
         document.getElementById('form-disclaimer').value = defaultDisclaimer;
         document.getElementById('form-notes').value = '';
+        document.getElementById('form-footer-text').value = '';
         document.getElementById('form-default').checked = false;
 
         document.getElementById('template-modal').style.display = 'flex';
@@ -286,12 +394,18 @@
         document.getElementById('method-container').innerHTML = '@method("PUT")';
 
         document.getElementById('form-name').value = tmpl.name || '';
+        document.getElementById('form-application').value = tmpl.application_name || '';
         document.getElementById('form-company').value = tmpl.company_name || '';
         document.getElementById('form-department').value = tmpl.department || '';
         document.getElementById('form-signer-title').value = tmpl.signer_title || '';
         document.getElementById('form-signer-name').value = tmpl.signer_name || '';
+        document.getElementById('form-second-signer-title').value = tmpl.second_signer_title || '';
+        document.getElementById('form-second-signer-name').value = tmpl.second_signer_name || '';
+        document.getElementById('form-reference-code').value = tmpl.reference_code || '';
+        document.getElementById('form-status-label').value = tmpl.status_label || '';
         document.getElementById('form-disclaimer').value = tmpl.disclaimer_text || '';
         document.getElementById('form-notes').value = tmpl.notes || '';
+        document.getElementById('form-footer-text').value = tmpl.footer_text || '';
         document.getElementById('form-default').checked = !!tmpl.is_default;
 
         document.getElementById('template-modal').style.display = 'flex';

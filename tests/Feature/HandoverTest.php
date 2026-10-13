@@ -51,6 +51,7 @@ class HandoverTest extends TestCase
         $response->assertSee('Direzione IT');
         $response->assertSee('Roberto Mancini');
         $response->assertSee('Acme Corp');
+        $response->assertSee('Modifica');
     }
 
     /** @test */
@@ -58,18 +59,29 @@ class HandoverTest extends TestCase
     {
         $response = $this->actingAs($this->admin)->post('/permission-manager/handover-templates', [
             'name' => 'Direzione Commerciale',
+            'application_name' => 'CRM Cloud Suite',
             'company_name' => 'Acme S.p.A.',
             'department' => 'Sales',
             'signer_title' => 'Chief Commercial Officer',
             'signer_name' => 'Alessandro Galli',
+            'second_signer_title' => 'CISO',
+            'second_signer_name' => 'Roberto Mancini',
+            'reference_code' => 'DOC-CRM-2026',
+            'status_label' => 'Certificato',
             'disclaimer_text' => 'Dichiaro di aver ricevuto le credenziali per CRM e vendite.',
+            'footer_text' => 'Acme S.p.A. • Divisione Commerciale & Sicurezza',
             'is_default' => '1',
         ]);
 
         $response->assertRedirect('/permission-manager/handover-templates');
         $this->assertDatabaseHas('permission_handover_templates', [
             'name' => 'Direzione Commerciale',
+            'application_name' => 'CRM Cloud Suite',
             'signer_name' => 'Alessandro Galli',
+            'second_signer_name' => 'Roberto Mancini',
+            'reference_code' => 'DOC-CRM-2026',
+            'status_label' => 'Certificato',
+            'footer_text' => 'Acme S.p.A. • Divisione Commerciale & Sicurezza',
             'is_default' => 1,
         ]);
     }
@@ -79,6 +91,7 @@ class HandoverTest extends TestCase
     {
         $template = HandoverTemplate::create([
             'name' => 'Direzione HR',
+            'application_name' => 'HR App',
             'company_name' => 'Acme Corp',
             'department' => 'HR',
             'signer_title' => 'HR Manager',
@@ -89,11 +102,17 @@ class HandoverTest extends TestCase
 
         $response = $this->actingAs($this->admin)->put("/permission-manager/handover-templates/{$template->id}", [
             'name' => 'Direzione Risorse Umane & Organizzazione',
+            'application_name' => 'HR Portal Global',
             'company_name' => 'Acme Corp',
             'department' => 'People & Org',
             'signer_title' => 'Chief People Officer',
             'signer_name' => 'Laura Corti',
+            'second_signer_title' => 'Security Director',
+            'second_signer_name' => 'Marco Ferrari',
+            'reference_code' => 'DOC-HR-001',
+            'status_label' => 'Approvato',
             'disclaimer_text' => 'Updated disclaimer text',
+            'footer_text' => 'Custom Footer HR',
             'is_default' => '1',
         ]);
 
@@ -101,8 +120,11 @@ class HandoverTest extends TestCase
         $template->refresh();
 
         $this->assertEquals('Direzione Risorse Umane & Organizzazione', $template->name);
+        $this->assertEquals('HR Portal Global', $template->application_name);
         $this->assertEquals('Chief People Officer', $template->signer_title);
-        $this->assertEquals('Updated disclaimer text', $template->disclaimer_text);
+        $this->assertEquals('Marco Ferrari', $template->second_signer_name);
+        $this->assertEquals('DOC-HR-001', $template->reference_code);
+        $this->assertEquals('Custom Footer HR', $template->footer_text);
         $this->assertTrue($template->is_default);
     }
 
@@ -158,11 +180,17 @@ class HandoverTest extends TestCase
     {
         $tmpl = HandoverTemplate::create([
             'name' => 'Default Directive',
+            'application_name' => 'SAP Enterprise Suite',
             'company_name' => 'Acme Security S.p.A.',
             'department' => 'Cyber Operations',
             'signer_title' => 'Security Lead',
             'signer_name' => 'Marco Ferrari',
+            'second_signer_title' => 'DPO',
+            'second_signer_name' => 'Avv. Andrea Conti',
+            'reference_code' => 'DOC-SEC-99',
+            'status_label' => 'Valido ISO',
             'disclaimer_text' => 'Custom text acknowledging GDPR Art 29 compliance.',
+            'footer_text' => 'Acme Corp • Stampa Ufficiale di Sicurezza',
             'is_default' => true,
         ]);
 
@@ -177,14 +205,39 @@ class HandoverTest extends TestCase
         $response = $this->actingAs($this->admin)->get("/permission-manager/users/{$this->targetUser->id}/handover");
 
         $response->assertStatus(200);
+        $response->assertSee('SAP Enterprise Suite');
         $response->assertSee('Acme Security S.p.A.');
         $response->assertSee('Marco Ferrari');
-        $response->assertSee('Security Lead');
+        $response->assertSee('Avv. Andrea Conti');
+        $response->assertSee('DPO');
+        $response->assertSee('DOC-SEC-99');
+        $response->assertSee('Valido ISO');
+        $response->assertSee('Acme Corp • Stampa Ufficiale di Sicurezza');
         $response->assertSee('Mario Rossi');
         $response->assertSee('auditor');
         $response->assertSee('reports.view');
         $response->assertSee('users.direct-audit');
-        $response->assertSee('Custom text acknowledging GDPR Art 29 compliance.');
+    }
+
+    /** @test */
+    public function it_does_not_render_ref_or_status_if_they_are_empty()
+    {
+        $tmpl = HandoverTemplate::create([
+            'name' => 'Clean Template',
+            'company_name' => 'Simple Corp',
+            'signer_title' => 'Director',
+            'signer_name' => 'Boss',
+            'reference_code' => null,
+            'status_label' => null,
+            'disclaimer_text' => 'Clean test text',
+            'is_default' => true,
+        ]);
+
+        $response = $this->actingAs($this->admin)->get("/permission-manager/users/{$this->targetUser->id}/handover?template_id={$tmpl->id}");
+
+        $response->assertStatus(200);
+        $response->assertDontSee('<strong>REF:</strong>', false);
+        $response->assertDontSee('<strong>Status:</strong>', false);
     }
 
     /** @test */

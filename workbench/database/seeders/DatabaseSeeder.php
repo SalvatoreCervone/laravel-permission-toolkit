@@ -144,39 +144,57 @@ class DatabaseSeeder extends Seeder
         // 6. Seed Realistic Handover Signoff Templates
         $handoverTable = config('permission-toolkit.handover.table', 'permission_handover_templates');
         if (\Illuminate\Support\Facades\Schema::hasTable($handoverTable)) {
-            \SalvatoreCervone\PermissionToolkit\Models\HandoverTemplate::firstOrCreate([
+            \SalvatoreCervone\PermissionToolkit\Models\HandoverTemplate::updateOrCreate([
                 'name' => 'Direzione IT & Cybersecurity',
             ], [
+                'application_name' => 'Enterprise Infrastructure & Cloud',
                 'company_name' => 'Acme Enterprise S.p.A.',
                 'department' => 'Sistemi Informativi & Cybersecurity',
                 'signer_title' => 'Chief Information Security Officer (CISO)',
                 'signer_name' => 'Ing. Roberto Mancini',
+                'second_signer_title' => null,
+                'second_signer_name' => null,
+                'reference_code' => 'DOC-IT-SEC',
+                'status_label' => 'Conforme ISO 27001',
                 'disclaimer_text' => "Il sottoscritto dichiara di aver ricevuto le credenziali di autenticazione al sistema informativo e la presente scheda di attribuzione privilegi. Si impegna ad osservare rigorosamente le istruzioni impartite dal Titolare del trattamento ai sensi dell'art. 29 del Regolamento UE 2016/679 (GDPR), custodendo con la massima diligenza e segretezza le chiavi di accesso personali e segnalando tempestivamente al Team di Sicurezza qualsiasi anomalia o violazione rilevata.",
                 'notes' => 'Da archiviare nel fascicolo di conformità IT e conservare per tutta la durata del rapporto contrattuale.',
+                'footer_text' => 'Acme Enterprise S.p.A. • Divisione Sicurezza Informatica & IT Governance',
                 'is_default' => true,
             ]);
 
-            \SalvatoreCervone\PermissionToolkit\Models\HandoverTemplate::firstOrCreate([
+            \SalvatoreCervone\PermissionToolkit\Models\HandoverTemplate::updateOrCreate([
                 'name' => 'Direzione Risorse Umane',
             ], [
+                'application_name' => 'HR Portal & Payroll Suite',
                 'company_name' => 'Acme Enterprise S.p.A.',
                 'department' => 'People & Organization / HR',
-                'signer_title' => 'Head of Human Resources',
+                'signer_title' => 'Head of Human Resources (Direttore Utente)',
                 'signer_name' => 'Dott.ssa Laura Corti',
+                'second_signer_title' => 'Chief Information Security Officer (CISO)',
+                'second_signer_name' => 'Ing. Roberto Mancini',
+                'reference_code' => 'DOC-HR-PRIVACY',
+                'status_label' => 'Conforme GDPR Art. 29',
                 'disclaimer_text' => "Con la firma del presente documento, l'incaricato attesta la consegna del profilo di accesso informatico autorizzato per le sole mansioni lavorative contrattualmente concordate, impegnandosi a non cedere né divulgare a terzi le credenziali ricevute in conformità con il Regolamento Aziendale.",
-                'notes' => 'Copia destinata al fascicolo personale del dipendente.',
+                'notes' => 'Copia destinata al fascicolo personale del dipendente con duplice firma della Direzione HR e del CISO.',
+                'footer_text' => 'Acme Enterprise S.p.A. • Ufficio Risorse Umane & DPO Compliance',
                 'is_default' => false,
             ]);
 
-            \SalvatoreCervone\PermissionToolkit\Models\HandoverTemplate::firstOrCreate([
+            \SalvatoreCervone\PermissionToolkit\Models\HandoverTemplate::updateOrCreate([
                 'name' => 'Direzione Commerciale & Marketing',
             ], [
+                'application_name' => 'CRM & Sales Cloud',
                 'company_name' => 'Acme Enterprise S.p.A.',
                 'department' => 'Sales & Business Development',
-                'signer_title' => 'Chief Commercial Officer (CCO)',
+                'signer_title' => 'Chief Commercial Officer (Direttore Utente)',
                 'signer_name' => 'Dott. Alessandro Galli',
+                'second_signer_title' => 'IT Operations & Infrastructure Manager',
+                'second_signer_name' => 'Ing. Marco Bianchi',
+                'reference_code' => 'DOC-CRM',
+                'status_label' => 'Attivo / Certificato',
                 'disclaimer_text' => "Il sottoscritto dichiara di aver preso visione dei ruoli e permessi associati alla propria utenza sul CRM e sui database aziendali, assumendosi l'onere della corretta custodia dei dati di clienti e partner commerciali nel rispetto delle norme sulla riservatezza.",
                 'notes' => 'Valido per la sede centrale e le filiali regionali.',
+                'footer_text' => null,
                 'is_default' => false,
             ]);
         }

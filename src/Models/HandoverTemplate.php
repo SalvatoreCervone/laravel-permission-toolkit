@@ -42,12 +42,18 @@ class HandoverTemplate extends Model
         return new static([
             'id' => null,
             'name' => 'Standard',
+            'application_name' => config('app.name', 'Sistema Informativo Aziendale'),
             'company_name' => config('permission-toolkit.handover.default_company_name', config('app.name', 'Enterprise Corp')),
             'department' => null,
             'signer_title' => config('permission-toolkit.handover.default_signer_title', 'Il Responsabile della Sicurezza IT'),
             'signer_name' => config('permission-toolkit.handover.default_signer_name', 'Amministratore di Sistema'),
+            'second_signer_title' => null,
+            'second_signer_name' => null,
+            'reference_code' => 'DOC-ACR',
+            'status_label' => 'Valido / Conforme',
             'disclaimer_text' => config('permission-toolkit.handover.default_disclaimer', "Il sottoscritto dichiara di aver ricevuto le credenziali di accesso al sistema informativo e la presente attestazione relativa ai ruoli e permessi associati alla propria utenza. Dichiara altresì di essere a conoscenza delle proprie responsabilità in materia di riservatezza, custodia delle credenziali e trattamento dei dati ai sensi della normativa vigente (Regolamento UE 2016/679 - GDPR) e delle policy aziendali."),
             'notes' => null,
+            'footer_text' => null,
             'is_default' => true,
         ]);
     }

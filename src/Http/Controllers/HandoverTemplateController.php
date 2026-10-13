@@ -34,12 +34,18 @@ class HandoverTemplateController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'application_name' => 'nullable|string|max:255',
             'company_name' => 'nullable|string|max:255',
             'department' => 'nullable|string|max:255',
             'signer_title' => 'required|string|max:255',
             'signer_name' => 'required|string|max:255',
+            'second_signer_title' => 'nullable|string|max:255',
+            'second_signer_name' => 'nullable|string|max:255',
+            'reference_code' => 'nullable|string|max:255',
+            'status_label' => 'nullable|string|max:255',
             'disclaimer_text' => 'required|string',
             'notes' => 'nullable|string',
+            'footer_text' => 'nullable|string|max:500',
             'is_default' => 'nullable|boolean',
         ]);
 
@@ -81,12 +87,18 @@ class HandoverTemplateController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'application_name' => 'nullable|string|max:255',
             'company_name' => 'nullable|string|max:255',
             'department' => 'nullable|string|max:255',
             'signer_title' => 'required|string|max:255',
             'signer_name' => 'required|string|max:255',
+            'second_signer_title' => 'nullable|string|max:255',
+            'second_signer_name' => 'nullable|string|max:255',
+            'reference_code' => 'nullable|string|max:255',
+            'status_label' => 'nullable|string|max:255',
             'disclaimer_text' => 'required|string',
             'notes' => 'nullable|string',
+            'footer_text' => 'nullable|string|max:500',
             'is_default' => 'nullable|boolean',
         ]);
 

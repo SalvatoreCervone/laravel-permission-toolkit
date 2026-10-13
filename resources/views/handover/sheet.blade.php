@@ -369,6 +369,11 @@
             <!-- Header -->
             <div class="doc-header">
                 <div>
+                    @if(!empty($template->application_name))
+                        <div style="font-size: 0.8rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">
+                            🖥️ {{ $template->application_name }}
+                        </div>
+                    @endif
                     <div class="doc-company">
                         {{ $template->company_name ?? config('permission-toolkit.handover.default_company_name', config('app.name', 'Enterprise Corp')) }}
                     </div>
@@ -379,9 +384,13 @@
                     @endif
                 </div>
                 <div class="doc-meta">
-                    <div><strong>REF:</strong> DOC-ACR-{{ str_pad($user->id, 5, '0', STR_PAD_LEFT) }}-{{ date('Ymd') }}</div>
+                    @if(!empty($template->reference_code))
+                        <div><strong>REF:</strong> {{ $template->reference_code }}-{{ str_pad($user->id, 5, '0', STR_PAD_LEFT) }}-{{ date('Ymd') }}</div>
+                    @endif
                     <div><strong>{{ __('permission-toolkit::messages.handover_doc_date') }}:</strong> {{ now()->format('d/m/Y H:i') }}</div>
-                    <div><strong>Status:</strong> Valid / Certified</div>
+                    @if(!empty($template->status_label))
+                        <div><strong>Status:</strong> {{ $template->status_label }}</div>
+                    @endif
                 </div>
             </div>
 
@@ -408,9 +417,19 @@
                         <span class="info-label">{{ __('permission-toolkit::messages.users_th_email') }}:</span>
                         <span class="info-value">{{ $user->email ?? 'N/A' }}</span>
                     </div>
+                    @if(!empty($template->application_name))
+                        <div class="info-item">
+                            <span class="info-label">{{ __('permission-toolkit::messages.handover_lbl_application') }}:</span>
+                            <span class="info-value" style="font-weight: 600; color: #4338ca;">{{ $template->application_name }}</span>
+                        </div>
+                    @endif
                     <div class="info-item">
                         <span class="info-label">{{ __('permission-toolkit::messages.handover_lbl_account_created') }}:</span>
                         <span class="info-value">{{ $user->created_at ? $user->created_at->format('d/m/Y') : 'N/A' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">{{ __('permission-toolkit::messages.handover_lbl_account_activated') }}:</span>
+                        <span class="info-value" style="font-weight: 600;">{{ $user->updated_at ? $user->updated_at->format('d/m/Y H:i') : ($user->created_at ? $user->created_at->format('d/m/Y') : now()->format('d/m/Y')) }}</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">{{ __('permission-toolkit::messages.users_th_status') }}:</span>
@@ -517,9 +536,12 @@
                 @endif
             </div>
 
-            <!-- Dual Signatures Block -->
-            <div class="signatures-grid">
-                <!-- Direzione / Signer -->
+            <!-- Signatures Block (Dual or Triple) -->
+            @php
+                $hasSecondSigner = !empty($template->second_signer_name);
+            @endphp
+            <div class="signatures-grid" style="{{ $hasSecondSigner ? 'grid-template-columns: repeat(3, 1fr); gap: 1rem;' : '' }}">
+                <!-- 1. Direttore Utente / Responsabile -->
                 <div class="signature-card">
                     <div>
                         <div class="signature-header">
@@ -538,7 +560,28 @@
                     </div>
                 </div>
 
-                <!-- Utente / Assignee -->
+                @if($hasSecondSigner)
+                    <!-- 2. Altro Direttore / Incaricato Firmatario (CISO, DPO, Amm. Sistema) -->
+                    <div class="signature-card">
+                        <div>
+                            <div class="signature-header">
+                                {{ __('permission-toolkit::messages.handover_sig_second_management_title') }}
+                            </div>
+                            <div class="signature-signer">
+                                {{ $template->second_signer_name }}
+                            </div>
+                            <div class="signature-title">
+                                {{ $template->second_signer_title ?? __('permission-toolkit::messages.handover_sig_second_default_title') }}
+                            </div>
+                        </div>
+                        <div class="signature-line-block">
+                            <span>{{ __('permission-toolkit::messages.handover_sig_sign') }}</span>
+                            <span>{{ __('permission-toolkit::messages.handover_sig_date') }} ____/____/________</span>
+                        </div>
+                    </div>
+                @endif
+
+                <!-- 3. Utente Assegnatario per Ricevuta -->
                 <div class="signature-card">
                     <div>
                         <div class="signature-header">
@@ -561,7 +604,11 @@
             <!-- Footer -->
             <div class="doc-footer">
                 <div>
-                    {{ __('permission-toolkit::messages.brand') }} • Compliance & Access Governance System
+                    @if(!empty($template->footer_text))
+                        {{ $template->footer_text }}
+                    @else
+                        {{ ($template->company_name ?? config('permission-toolkit.handover.default_company_name', config('app.name', 'Enterprise Corp'))) }} • {{ !empty($template->application_name) ? $template->application_name . ' • ' : '' }}Compliance & Access Governance System
+                    @endif
                 </div>
                 <div>
                     Page 1 / 1
